@@ -1,0 +1,143 @@
+deploy.yml
+
+"
+name: Setup and Deploy Stack
+
+on:
+  #push:
+  #  branches:
+  #    - master
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install CDK and Dependencies
+        run: |
+          cd CDK
+          npm install
+
+      - name: Clean CDK Context
+        run: |
+          cd CDK
+          rm -rf node_modules/.cdk
+
+      - name: Set Environment Variables
+        run: |
+          echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Bootstrap CDK Environment
+        run: |
+          cd CDK
+          npx cdk bootstrap aws://${{ env.AWS_ACCOUNT_ID }}/${{ env.AWS_REGION }}
+
+      - name: Deploy CDK Stack
+        id: deploy
+        run: |
+          cd CDK
+          npx cdk deploy --all --require-approval never
+
+"
+
+docker-build-push.yml
+
+"
+name: Build and Push Docker Images
+
+on:
+  workflow_run:
+    workflows: ["Setup and Deploy Stack"]
+    types:
+      - completed
+
+  workflow_dispatch:
+    inputs:
+      example-input:
+        description: "An example input"
+        required: false
+        default: "default value"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: META_START_DATA
+        run: |
+          echo ACTION: $HITHUB_ACTION
+          echo GITHuB_ACTION_REPOSITORY $GITHUB_ACTION_REPOSITORY
+          echo GITHuB_ACTION_REPOSITORY $GITHUB_ACTION_REPOSITORY
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Assume GitHubActionsAdminRole
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Output ECR URI
+        id: output-ecr-uri
+        run: |
+          set -x  # Enable command tracing
+          # Print current AWS CLI configuration
+          aws configure list
+          # Print AWS CLI version
+          aws --version
+          # Describe stacks and handle potential errors
+          ECR_URI=$(aws cloudformation describe-stacks --stack-name IoTStack --query "Stacks[0].Outputs[?OutputKey=='EcrRepositoryUri'].OutputValue" --output text || echo "Failed to get ECR URI")
+          echo "ECR_URI=$ECR_URI"
+          echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Print ECR URI
+        run: echo "ECR_URI=${{ env.ECR_URI }}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Print ECR URI
+        run: |
+          echo "trying to print out ECR_URI"
+          echo "test $TEST"
+          echo "ECR_URI=${{ env.ECR_URI }}"
+          echo "ECR_URI=${{ needs.deploy.outputs.ecr-uri }}"
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_URI }}
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Build and Push Docker image
+        run: |
+          echo "Building Docker image from IoT_GPS"
+          docker build -t ${{ env.ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
+          docker push ${{ env.ECR_URI }}:latest
+
+"from

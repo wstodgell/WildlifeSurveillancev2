@@ -1,0 +1,38 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+venv/
+env/
+.env
+
+# npm
+node_modules/
+npm-debug.log
+package-lock.json
+yarn-error.log
+yarn.lock
+
+# AWS CDK
+cdk.out/
+*.log
+
+# Docker
+*.dockerignore
+docker-compose.yml
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Others
+*.log
+*.swp
+*.swo
+*.tmp
