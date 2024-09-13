@@ -49,10 +49,14 @@ export class IotCodeStack extends cdk.Stack {
       },
       policy: cr.AwsCustomResourcePolicy.fromStatements([
         new iam.PolicyStatement({
-          actions: ['iot:CreateKeysAndCertificate'],
+          actions: [
+            'iot:CreateKeysAndCertificate',
+            'iot:AttachThingPrincipal', // Add permission for attaching the cert to the IoT Thing
+            'iot:AttachPolicy' // Add permission for attaching the policy to the cert
+          ],
           resources: ['*'],
         }),
-      ]),
+      ])
     });
 
     // Extract certificate ARN from the custom resource
