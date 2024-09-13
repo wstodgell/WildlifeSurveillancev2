@@ -36,7 +36,10 @@ export class IotCodeStack extends cdk.Stack {
       thingName: 'ElkGPSCollar',
     });
 
-    // Custom resource to create IoT Certificate
+    // Import the existing GitHubActionsAdminRole using its ARN
+    const adminRole = iam.Role.fromRoleArn(this, 'GitHubActionsAdminRole', 'arn:aws:iam::<your-account-id>:role/GitHubActionsAdminRole');
+
+    // Use the role for the AwsCustomResource
     const certResource = new cr.AwsCustomResource(this, 'CreateIoTCertificate', {
       onCreate: {
         service: 'Iot',
@@ -45,36 +48,14 @@ export class IotCodeStack extends cdk.Stack {
           setAsActive: true
         },
         physicalResourceId: cr.PhysicalResourceId.of('CreateIoTCertificate'),
-        region: cdk.Stack.of(this).region, // Use the current region
       },
-      policy: cr.AwsCustomResourcePolicy.fromStatements([
-        new iam.PolicyStatement({
-          actions: [
-            'iot:CreateKeysAndCertificate',
-            'iot:AttachThingPrincipal', // Add permission for attaching the cert to the IoT Thing
-            'iot:AttachPolicy' // Add permission for attaching the policy to the cert
-          ],
-          resources: ['*'],
-        }),
-      ])
+      role: adminRole,  // Assign your GitHubActionsAdminRole
     });
 
-    // Extract certificate ARN from the custom resource
+    // Extract certificate ARN from AwsCustomResource
     const certArn = certResource.getResponseField('certificateArn');
 
-    // Attach the certificate to the IoT Thing
-    new iot.CfnThingPrincipalAttachment(this, 'IoTThingCertAttachment', {
-      principal: certArn,
-      thingName: iotThing.thingName!,
-    });
-
-    // Attach the policy to the certificate
-    new iot.CfnPolicyPrincipalAttachment(this, 'IoTPolicyAttachment', {
-      principal: certArn,
-      policyName: iotPolicy.policyName!,
-    });
-
-// ************************ Create an S3 bucket to store IoT messages
+    // Create an S3 bucket to store IoT messages
     const iotGpsBucket = new s3.Bucket(this, 'IoTGPSMessagesBucket', {
       bucketName: 'iot-gps-mqtt-messages-bucket',
       removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes bucket on stack deletion (adjust as needed)
@@ -83,7 +64,7 @@ export class IotCodeStack extends cdk.Stack {
       publicReadAccess: false,   // Ensures bucket is private
     });
 
-    // ****************************************Lambda function to create IoT certificates and upload them to S3d
+    // Lambda function to create IoT certificates and upload them to S3
     const createCertificatesFunction = new lambda.Function(this, 'CreateCertificatesFunction', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
@@ -93,9 +74,20 @@ export class IotCodeStack extends cdk.Stack {
       },
     });
 
+    // Ensure Lambda has necessary permissions for IoT and S3 actions
+    createCertificatesFunction.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'iot:CreateKeysAndCertificate',
+        'iot:AttachThingPrincipal',
+        'iot:AttachPolicy',
+        's3:PutObject'
+      ],
+      resources: ['*'],  // Adjust as needed
+    }));
+
     iotGpsBucket.grantPut(createCertificatesFunction); // Grant Lambda permission to upload to S3
 
-    // Custom resource to trigger **** Lambda during CDK deployment
+    // Custom resource to trigger Lambda during CDK deployment
     new cr.AwsCustomResource(this, 'CreateCertificatesCustomResource', {
       onCreate: {
         service: 'Lambda',
@@ -106,9 +98,8 @@ export class IotCodeStack extends cdk.Stack {
         physicalResourceId: cr.PhysicalResourceId.of('CreateCertificatesCustomResource'),
       },
     });
-    // ************************ END OF LAMBDA FUNCTION *****************************
 
-      // Add a bucket policy to allow IoT and ECS to put objects in the bucket
+    // Add a bucket policy to allow IoT and ECS to put objects in the bucket
     iotGpsBucket.addToResourcePolicy(new iam.PolicyStatement({
       actions: ['s3:PutObject', 's3:PutObjectAcl', 's3:GetObject'],
       resources: [`${iotGpsBucket.bucketArn}/*`],
@@ -124,40 +115,36 @@ export class IotCodeStack extends cdk.Stack {
     });
   
     const iotRole = new iam.Role(this, 'IoTToS3Role', {
-        assumedBy: new iam.ServicePrincipal('iot.amazonaws.com'),
-        inlinePolicies: {
-            S3WriteAccess: new iam.PolicyDocument({
-                statements: [s3WritePolicy],
-            }),
-        },
+      assumedBy: new iam.ServicePrincipal('iot.amazonaws.com'),
+      inlinePolicies: {
+        S3WriteAccess: new iam.PolicyDocument({
+          statements: [s3WritePolicy],
+        }),
+      },
     });
 
     const iotRule = new iot.CfnTopicRule(this, 'IoTGpsToS3Rule', {
       ruleName: 'IoTGpsToS3Rule',
       topicRulePayload: {
-          actions: [
-              {
-                  s3: {
-                      bucketName: iotGpsBucket.bucketName,
-                      key: 'gps_data/${timestamp()}.json',  // Object key format with timestamp
-                      roleArn: iotRole.roleArn,  // Use the role created above
-                  },
-              },
-          ],
-          sql: "SELECT * FROM 'gps/elk'",  // SQL query to select messages from the MQTT topic
-          ruleDisabled: false,
-        },
+        actions: [
+          {
+            s3: {
+              bucketName: iotGpsBucket.bucketName,
+              key: 'gps_data/${timestamp()}.json',  // Object key format with timestamp
+              roleArn: iotRole.roleArn,  // Use the role created above
+            },
+          },
+        ],
+        sql: "SELECT * FROM 'gps/elk'",  // SQL query to select messages from the MQTT topic
+        ruleDisabled: false,
+      },
     });
-  
 
+    // Outputs for resources
     new cdk.CfnOutput(this, 'S3GPSBucketName', {
       value: iotGpsBucket.bucketName,
       description: 'Name of the S3 Bucket for IoT GPS messages',
     });
-
-
-
-    // Outputs to find the certificate and Thing details
 
     new cdk.CfnOutput(this, 'IoTPolicyOutput', {
       value: iotPolicy.policyName!,
@@ -165,19 +152,13 @@ export class IotCodeStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'IoTCertificateArnOutput', {
-      value: certResource.getResponseField('certificateArn'),
+      value: certArn,
       description: 'The ARN of the IoT Device Certificate',
     });
-
 
     new cdk.CfnOutput(this, 'IoTThingName', {
       value: iotThing.thingName!,
       description: 'The name of the IoT Thing',
-    });
-
-    new cdk.CfnOutput(this, 'IoTCertificateArn', {
-      value: certArn,
-      description: 'The ARN of the IoT Device Certificate',
     });
   }
 }
