@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd CDK
-          npm install
+          npm ci
 
       - name: Clean CDK Context
         run: |
