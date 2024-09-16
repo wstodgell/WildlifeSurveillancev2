@@ -1,24 +1,32 @@
-    // ****************************************Lambda function to create IoT certificates and upload them to S3d
-    const createCertificatesFunction = new lambda.Function(this, 'CreateCertificatesFunction', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, 'lambda/create-certificates')),
-      environment: {
-        BUCKET_NAME: iotGpsBucket.bucketName,
-      },
-    });
+// ****************************************Lambda function to create IoT certificates and upload them to S3d
+const createCertificatesFunction = new lambda.Function(
+  this,
+  "CreateCertificatesFunction",
+  {
+    runtime: lambda.Runtime.NODEJS_18_X,
+    handler: "index.handler",
+    code: lambda.Code.fromAsset(
+      path.join(__dirname, "lambda/create-certificates")
+    ),
+    environment: {
+      BUCKET_NAME: iotGpsBucket.bucketName,
+    },
+  }
+);
 
-    iotGpsBucket.grantPut(createCertificatesFunction); // Grant Lambda permission to upload to S3
+iotGpsBucket.grantPut(createCertificatesFunction); // Grant Lambda permission to upload to S3
 
-    // Custom resource to trigger **** Lambda during CDK deployment
-    new cr.AwsCustomResource(this, 'CreateCertificatesCustomResource', {
-      onCreate: {
-        service: 'Lambda',
-        action: 'invoke',
-        parameters: {
-          FunctionName: createCertificatesFunction.functionName,
-        },
-        physicalResourceId: cr.PhysicalResourceId.of('CreateCertificatesCustomResource'),
-      },
-    });
-    // ************************ END OF LAMBDA FUNCTION *****************************
+// Custom resource to trigger **** Lambda during CDK deployment
+new cr.AwsCustomResource(this, "CreateCertificatesCustomResource", {
+  onCreate: {
+    service: "Lambda",
+    action: "invoke",
+    parameters: {
+      FunctionName: createCertificatesFunction.functionName,
+    },
+    physicalResourceId: cr.PhysicalResourceId.of(
+      "CreateCertificatesCustomResource"
+    ),
+  },
+});
+// ************************ END OF LAMBDA FUNCTION *****************************

@@ -1,24 +1,19 @@
-    // ****************************************Lambda function to create IoT certificates and upload them to S3d
-    const createCertificatesFunction = new lambda.Function(this, 'CreateCertificatesFunction', {
-      runtime: lambda.Runtime.NODEJS_18_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, 'lambda/create-certificates')),
-      environment: {
-        BUCKET_NAME: iotGpsBucket.bucketName,
-      },
-    });
+- name: Parse S3 Bucket Name from CDK Outputs
+        id: parse_s3_bucket
+        run: |
+          S3_BUCKET=$(cat ./cdk-outputs.json | jq -r '.IotCodeStack.S3GPSBucketName')
+          echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
 
-    iotGpsBucket.grantPut(createCertificatesFunction); // Grant Lambda permission to upload to S3
+      - name: Invoke Lambda to Create Certificates
+        run: |
+          aws lambda invoke --function-name CreateCertificatesFunction response.json
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
-    // Custom resource to trigger **** Lambda during CDK deployment
-    new cr.AwsCustomResource(this, 'CreateCertificatesCustomResource', {
-      onCreate: {
-        service: 'Lambda',
-        action: 'invoke',
-        parameters: {
-          FunctionName: createCertificatesFunction.functionName,
-        },
-        physicalResourceId: cr.PhysicalResourceId.of('CreateCertificatesCustomResource'),
-      },
-    });
-    // ************************ END OF LAMBDA FUNCTION *****************************
+      - name: Check if certificates uploaded successfully
+        run: |
+          aws s3 ls s3://$S3_BUCKET/certs/
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
