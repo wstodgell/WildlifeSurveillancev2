@@ -41,12 +41,14 @@ jobs:
       - name: Get GitHub OIDC Token
         id: oidc
         run: |
-          echo "TOKEN=$(curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')" >> $GITHUB_ENV
+          TOKEN=$(curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
       - name: Print OIDC Token Claims
         run: |
-          HEADER=$(echo ${{ env.TOKEN }} | cut -d "." -f1 | base64 --decode)
-          PAYLOAD=$(echo ${{ env.TOKEN }} | cut -d "." -f2 | base64 --decode)
+          echo "Decoding OIDC Token"
+          HEADER=$(echo ${{ env.TOKEN }} | cut -d "." -f1 | base64 -d 2>/dev/null || echo ${{ env.TOKEN }} | cut -d "." -f1 | base64 --decode)
+          PAYLOAD=$(echo ${{ env.TOKEN }} | cut -d "." -f2 | base64 -d 2>/dev/null || echo ${{ env.TOKEN }} | cut -d "." -f2 | base64 --decode)
           echo "OIDC Header: $HEADER"
           echo "OIDC Payload: $PAYLOAD"
 
