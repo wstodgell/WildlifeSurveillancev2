@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # AWS IoT Core details
-MQTT_HOST = "a3f4hutyg6alsr-ats.iot.us-east-1.amazonaws.com"  # Replace with your AWS IoT Core endpoint - Iot Core -> Settings -> endpoint
+MQTT_HOST = "az4voj63ln50g-ats.iot.us-east-1.amazonaws.com"  # Replace with your AWS IoT Core endpoint - Iot Core -> Settings -> endpoint
 CLIENT_ID = "GPSCollarPublisher"
 TOPIC = "gps/elk"  # The MQTT topic where data will be sent
 
