@@ -5,7 +5,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Copy the shared requirements.txt from IoTMockSensors
-COPY ../IoTMockSensors/requirements.txt .
+COPY requirements.txt .
 
 # Install the shared dependencies
 RUN pip install --no-cache-dir -r requirements.txt
