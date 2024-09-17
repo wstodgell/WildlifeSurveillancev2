@@ -4,11 +4,11 @@ FROM python:3.12-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install the dependencies listed in the requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
 # Copy the rest of the app code (including Mock_GPSCollar_AWS.py) into the /app directory
 COPY . .
+
+# Install the dependencies listed in the requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Debugging: List files in /app to verify everything is copied
 RUN ls -la /app && cat /app/Mock_GPSCollar_AWS.py
