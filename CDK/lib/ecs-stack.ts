@@ -6,12 +6,12 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 
 
 export class EcsStack extends cdk.Stack {
-  public readonly ecrRepositoryUri: string;
+  public readonly GPSEcrRepositoryUri: string;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const ecrRepositoryUri = cdk.Fn.importValue('EcrRepositoryUri');
+    const GPSEcrRepositoryUri = cdk.Fn.importValue('GPSEcrRepositoryUri');
     const ecsTaskExecutionRoleArn = cdk.Fn.importValue('EcsTaskExecutionRoleArn');
     const ecsTaskExecutionRole = iam.Role.fromRoleArn(this, 'ImportedEcsTaskExecutionRole', ecsTaskExecutionRoleArn);
 
@@ -48,7 +48,7 @@ export class EcsStack extends cdk.Stack {
 
     // Add container to the Task Definition
     const container = taskDefinition.addContainer('GPSContainer', {
-      image: ecs.ContainerImage.fromRegistry(ecrRepositoryUri),  // Use imported ECR URI
+      image: ecs.ContainerImage.fromRegistry(GPSEcrRepositoryUri),  // Use imported ECR URI
       memoryLimitMiB: 512, // Adjust memory if needed
       cpu: 256, // Adjust CPU if needed
       logging: new ecs.AwsLogDriver({
