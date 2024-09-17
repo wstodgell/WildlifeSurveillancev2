@@ -80,6 +80,7 @@ export class EcsStack extends cdk.Stack {
       taskDefinition: GPSTaskDefinition,
       assignPublicIp: true, // Ensure tasks are reachable via public IP if needed
       desiredCount: 1, // Adjust based on how many instances you want running
+      enableExecuteCommand: true, // Enable ECS Exec
     });
 
 //********** TEST 
@@ -105,6 +106,7 @@ export class EcsStack extends cdk.Stack {
       taskDefinition: TestTaskDefinition,
       assignPublicIp: true, // Ensure tasks are reachable via public IP if needed
       desiredCount: 1, // Adjust based on how many instances you want running
+      enableExecuteCommand: true, // Enable ECS Exec
     });
 
 
