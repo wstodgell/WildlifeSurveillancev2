@@ -97,7 +97,7 @@ jobs:
       - name: Output TEST_ECR URI
         id: output-test-ecr-uri
         run: |
-          Test_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='TestEcrRepositoryUri'].OutputValue" --output text)
+          TEST_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='TestEcrRepositoryUri'].OutputValue" --output text)
           echo "TEST_ECR_URI=$TEST_ECR_URI"
           if [ -z "$TEST_ECR_URI" ]; then
             echo "TEST_ECR_URI is empty!"
