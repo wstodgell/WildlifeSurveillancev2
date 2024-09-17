@@ -105,9 +105,11 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
       # Build and push the Docker image to ECR
+      # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
+      # we broaden the scope to IoTMockSensors so that docker can access the requirements within it.
       - name: Build and Push GPS Docker Image
         run: |
-          docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
+          docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors
           docker push ${{ env.GPS_ECR_URI }}:latest
 
       # Deploy the ECS stack, which will use the Docker image in the ECR repository
