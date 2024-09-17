@@ -85,8 +85,11 @@ jobs:
       - name: Output GPS_ECR URI
         id: output-ecr-uri
         run: |
-          GPS_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='GPS_EcrRepositoryUri'].OutputValue" --output text)
+          GPS_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='GPSecrRepositoryUri'].OutputValue" --output text)
           echo "GPS_ECR_URI=$GPS_ECR_URI"
+          if [ -z "$GPS_ECR_URI" ]; then
+            echo "GPS_ECR_URI is empty!"
+          fi
           echo "GPS_ECR_URI=$GPS_ECR_URI" >> $GITHUB_ENV
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}

@@ -15,6 +15,9 @@ export class EcsStack extends cdk.Stack {
     const ecsTaskExecutionRoleArn = cdk.Fn.importValue('EcsTaskExecutionRoleArn');
     const ecsTaskExecutionRole = iam.Role.fromRoleArn(this, 'ImportedEcsTaskExecutionRole', ecsTaskExecutionRoleArn);
 
+    //Creates a new CloudWatch Log Group in AWS.  LogGroup = container for storing logs
+    //This = ECS Stack
+    //ECSLogGroup (identifier)
     const logGroup = new logs.LogGroup(this, 'EcsLogGroup', {
       logGroupName: '/ecs/IoT-GPS',
       removalPolicy: cdk.RemovalPolicy.DESTROY, // Ensure logs are cleaned up with stack removal
