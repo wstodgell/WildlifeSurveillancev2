@@ -57,7 +57,7 @@ export class EcsStack extends cdk.Stack {
       executionRole: ecsTaskExecutionRole,
     });
     
-
+//********** GPS 
     // Add container to the Task Definition
     const GPSContainer = GPSTaskDefinition.addContainer('GPSContainer', {
       image: ecs.ContainerImage.fromRegistry(GPSEcrRepositoryUri),  // Use imported ECR URI
@@ -82,17 +82,56 @@ export class EcsStack extends cdk.Stack {
       desiredCount: 1, // Adjust based on how many instances you want running
     });
 
+//********** TEST 
+// Add container to the Task Definition
+    const TestContainer = GPSTaskDefinition.addContainer('TestContainer', {
+      image: ecs.ContainerImage.fromRegistry(TestEcrRepositoryUri),  // Use imported ECR URI
+      memoryLimitMiB: 512, // Adjust memory if needed
+      cpu: 256, // Adjust CPU if needed
+      logging: new ecs.AwsLogDriver({
+        streamPrefix: 'IoT-Test',
+        logGroup: logGroup
+      }),
+    });
+
+    // Set networking mode for task (awsvpc)
+    TestContainer.addPortMappings({
+      containerPort: 81, // Adjust if your container exposes a different port
+    });
+
+    // Add Fargate Service to the IoTCluster
+    const TestFargateService = new ecs.FargateService(this, 'IoTTestService', {
+      cluster,
+      taskDefinition: TestTaskDefinition,
+      assignPublicIp: true, // Ensure tasks are reachable via public IP if needed
+      desiredCount: 1, // Adjust based on how many instances you want running
+    });
+
+
     // Output for the Task Definition and Service
     new cdk.CfnOutput(this, 'GPSTaskDefinitionFamily', {
       value: GPSTaskDefinition.family,
       description: 'Family of the GPS ECS Task Definition',
-      exportName: 'GPSTaskDefinitionFamily'
+      exportName: 'GPS TaskDefinitionFamily'
     });
 
     new cdk.CfnOutput(this, 'GPSFargateServiceName', {
       value: GPSFargateService.serviceName,
       description: 'Name of the GPS ECS Fargate Service',
       exportName: 'GPSFargateServiceName'
+    });
+
+    // Output for the Task Definition and Service
+    new cdk.CfnOutput(this, 'TestTaskDefinitionFamily', {
+      value: GPSTaskDefinition.family,
+      description: 'Family of the Test ECS Task Definition',
+      exportName: 'TestTaskDefinitionFamily'
+    });
+
+    new cdk.CfnOutput(this, 'TestFargateServiceName', {
+      value: TestFargateService.serviceName,
+      description: 'Name of the Test ECS Fargate Service',
+      exportName: 'TestFargateServiceName'
     });
   }
 }
