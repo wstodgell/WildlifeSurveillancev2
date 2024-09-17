@@ -4,7 +4,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class EcrStack extends cdk.Stack {
-  public readonly GPSecrRepositoryUri: string;
+  public readonly GPSEcrRepositoryUri: string;
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -16,11 +16,11 @@ export class EcrStack extends cdk.Stack {
     });
 
     // store the repository - property of cdk.Stack URI is typically: aws_account_id.dkr.ecr.region.amazonaws.com/repository_name
-    this.GPSecrRepositoryUri = GPSrepository.repositoryUri;
+    this.GPSEcrRepositoryUri = GPSrepository.repositoryUri;
 
     // Creates a Cloudformation output to display values: Logical ID = GPS_EcrRepositoryUri and name of the value.
     new cdk.CfnOutput(this, 'GPSEcrRepositoryUri', {
-      value: this.GPSecrRepositoryUri,
+      value: this.GPSEcrRepositoryUri,
       description: 'URI of the ECR repository',
       exportName: 'GPSEcrRepositoryUri'
     });
