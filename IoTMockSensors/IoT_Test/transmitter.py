@@ -1,3 +1,4 @@
+import time
 import boto3
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import logging
@@ -17,4 +18,6 @@ IOTC_ENDPOINT = "az4voj63ln50g-ats.iot.us-east-1.amazonaws.com"  # Replace with 
 CLIENT_ID = "TestTransmitter"
 TOPIC = "test/transmit"  # The MQTT topic where data will be sent
 
-
+while(True):
+    time.sleep(1)  # Wait 20 seconds before sending the next update
+    print("testing!!!")

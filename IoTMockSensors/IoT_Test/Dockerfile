@@ -11,7 +11,7 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Debugging: List files in /app to verify everything is copied
-RUN ls -la /app && cat /app/Mock_GPSCollar_AWS.py
+RUN ls -la /app && cat /app/transmitter.py
 
 # Define the entrypoint: Run Mock_GPSCollar_AWS.py when the container starts
-CMD ["python", "Mock_GPSCollar_AWS.py"]
+CMD ["python", "transmitter.py"]
