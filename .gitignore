@@ -36,3 +36,17 @@ Thumbs.db
 *.swp
 *.swo
 *.tmp
+
+# Ignore PEM files
+*.pem
+
+# Ignore private key files
+*.key
+
+# Ignore certificate files
+*.crt
+
+# Ignore any backup files related to keys or certs
+*.pem.bak
+*.key.bak
+*.crt.bak

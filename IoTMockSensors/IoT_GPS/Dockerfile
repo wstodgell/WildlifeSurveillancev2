@@ -1,14 +1,17 @@
-# Use the official Python image from the Docker Hub
+# Start with the base image
 FROM python:3.12-slim
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy the shared requirements.txt from IoTMockSensors
+COPY ../IoTMockSensors/requirements.txt .
 
-# Install any needed packages specified in requirements.txt
+# Install the shared dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Run the script when the container launches
+# Copy the rest of the app code for IoT_CameraTrap
+COPY . .
+
+# Define your entrypoint or command to run the IoT_CameraTrap service
 CMD ["python", "Mock_GPSCollar_AWS.py"]

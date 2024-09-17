@@ -77,12 +77,17 @@ jobs:
           npx cdk deploy EcrStack --require-approval never
 
       # Output ECR URI to use for Docker image pushing
-      - name: Output ECR URI
+      # describe- stacks (in this case the stack called EcrStack (we deploy 3 here, ecr, ecs and IoT)
+      # We specify the stack name 'EcrStack'
+      # We sepcified the name, so it returns just one stack at Stacks[0]
+      # Each stack has outputs (defined in ecr-stack.ts) so we grab that output
+      # we get that value and store it in GITHUB_ENV - later retrieved with env.ECR_URI
+      - name: Output GPS_ECR URI
         id: output-ecr-uri
         run: |
-          ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='EcrRepositoryUri'].OutputValue" --output text)
-          echo "ECR_URI=$ECR_URI"
-          echo "ECR_URI=$ECR_URI" >> $GITHUB_ENV
+          GPS_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='GPS_EcrRepositoryUri'].OutputValue" --output text)
+          echo "GPS_ECR_URI=$GPS_ECR_URI"
+          echo "GPS_ECR_URI=$GPS_ECR_URI" >> $GITHUB_ENV
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
@@ -92,15 +97,15 @@ jobs:
       # Log in to the Amazon ECR registry
       - name: Log in to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_URI }}
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.GPS_ECR_URI }}
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
       # Build and push the Docker image to ECR
-      - name: Build and Push Docker Image
+      - name: Build and Push GPS Docker Image
         run: |
-          docker build -t ${{ env.ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
-          docker push ${{ env.ECR_URI }}:latest
+          docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
+          docker push ${{ env.GPS_ECR_URI }}:latest
 
       # Deploy the ECS stack, which will use the Docker image in the ECR repository
       - name: Deploy ECS Stack
