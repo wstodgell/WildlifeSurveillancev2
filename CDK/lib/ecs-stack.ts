@@ -112,7 +112,7 @@ export class EcsStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'GPSTaskDefinitionFamily', {
       value: GPSTaskDefinition.family,
       description: 'Family of the GPS ECS Task Definition',
-      exportName: 'GPS TaskDefinitionFamily'
+      exportName: 'GPSTaskDefinitionFamily'
     });
 
     new cdk.CfnOutput(this, 'GPSFargateServiceName', {
