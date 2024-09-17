@@ -84,7 +84,7 @@ export class EcsStack extends cdk.Stack {
 
 //********** TEST 
 // Add container to the Task Definition
-    const TestContainer = GPSTaskDefinition.addContainer('TestContainer', {
+    const TestContainer = TestTaskDefinition.addContainer('TestContainer', {
       image: ecs.ContainerImage.fromRegistry(TestEcrRepositoryUri),  // Use imported ECR URI
       memoryLimitMiB: 512, // Adjust memory if needed
       cpu: 256, // Adjust CPU if needed
