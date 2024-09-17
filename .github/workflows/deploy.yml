@@ -119,7 +119,7 @@ jobs:
       # Build and push the Docker image to ECR
       # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
       # we broaden the scope to.
-      - name: Build and Push GPS Docker Image
+      - name: Build and Push *GPS* Docker Image
         run: |
           docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
           docker push ${{ env.GPS_ECR_URI }}:latest
@@ -131,7 +131,7 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Build and Push Test Docker Image
+      - name: Build and Push *Test* Docker Image
         run: |
           docker build -t ${{ env.TEST_ECR_URI }}:latest -f IoTMockSensors/IoT_Test/Dockerfile IoTMockSensors/IoT_Test
           docker push ${{ env.TEST_ECR_URI }}:latest
