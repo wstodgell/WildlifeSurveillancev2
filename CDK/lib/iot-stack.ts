@@ -10,65 +10,18 @@ export class IotCodeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create IoT Policy
-    const iotPolicy = new iot.CfnPolicy(this, 'IoTPolicy', {
-      policyName: 'IoTDevicePolicy',
-      policyDocument: {
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Effect: 'Allow',
-            Action: [
-              'iot:Connect',
-              'iot:Publish',
-              'iot:Subscribe',
-              'iot:Receive'
-            ],
-            Resource: '*',
-          },
-        ],
-      },
-    });
+     // Get the current account ID
+     const accountId = cdk.Stack.of(this).account;
 
-    // Create IoT Thing and identify it with the cloudformation stack IoTThing
-    const iotGPSThing = new iot.CfnThing(this, 'IoTThing', {
-      thingName: 'ElkGPSCollar',
-    });
+     // Create an S3 bucket with the account ID in the name
+     const certBucket = new s3.Bucket(this, `IoTCertificateBucket-${accountId}`, {
+       bucketName: `iot-certificates-${accountId}`, // Use the account ID in the bucket name
+       versioned: true,
+       removalPolicy: cdk.RemovalPolicy.DESTROY,
+     });
 
-    // Custom resource to create IoT Certificate
-    const certResource = new cr.AwsCustomResource(this, 'CreateIoTCertificate', {
-      onCreate: {
-        service: 'Iot',
-        action: 'createKeysAndCertificate',
-        parameters: {
-          setAsActive: true
-        },
-        physicalResourceId: cr.PhysicalResourceId.of('CreateIoTCertificate'),
-        region: cdk.Stack.of(this).region, // Use the current region
-      },
-      policy: cr.AwsCustomResourcePolicy.fromStatements([
-        new iam.PolicyStatement({
-          actions: ['iot:CreateKeysAndCertificate'],
-          resources: ['*'],
-        }),
-      ]),
-    });
-
-    // Extract certificate ARN from the custom resource
-    const certArn = certResource.getResponseField('certificateArn');
-
-    // Attach the certificate to the IoT Thing
-    new iot.CfnThingPrincipalAttachment(this, 'IoTThingCertAttachment', {
-      principal: certArn,
-      thingName: iotGPSThing.thingName!,
-    });
-
-    // Attach the policy to the certificate
-    new iot.CfnPolicyPrincipalAttachment(this, 'IoTPolicyAttachment', {
-      principal: certArn,
-      policyName: iotPolicy.policyName!,
-    });
-
-    createIoTThing(this, 'TestThing', 'IoTDevicePolicy-Test', cdk.Stack.of(this).region);
+    // Pass the bucket into the createIoTThing function
+    createIoTThing(this, 'GPSThing', 'IoTDevicePolicy-GPS', cdk.Stack.of(this).region, certBucket);
+    createIoTThing(this, 'TestThing', 'IoTDevicePolicy-Test', cdk.Stack.of(this).region, certBucket);
   }
 }
