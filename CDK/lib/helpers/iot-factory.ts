@@ -2,15 +2,14 @@ import * as iot from 'aws-cdk-lib/aws-iot';
 import * as cr from 'aws-cdk-lib/custom-resources';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
-import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as cdk from 'aws-cdk-lib/core';
 
 export function createIoTThing(
   scope: Construct,
   thingName: string,
   policyName: string,
-  region: string,
-  bucket: s3.Bucket
+  region: string
 ) {
   // Create IoT Thing
   const iotThing = new iot.CfnThing(scope, `IoTThing-${thingName}`, {
@@ -59,48 +58,14 @@ export function createIoTThing(
   console.log('Certificate PEM:', certPem);
   console.log('Private Key:', privateKey);
 
-  const s3UploadLambda = new lambda.Function(scope, `S3UploadLambda-${thingName}`, {
-    runtime: lambda.Runtime.NODEJS_18_X,
-    handler: 'index.handler',
-    code: lambda.Code.fromInline(`
-      const AWS = require('aws-sdk');
-      const s3 = new AWS.S3();
-      const log = console.log;
-  
-      exports.handler = async function(event) {
-        const { certPem, privateKey, bucketName, thingName } = event.ResourceProperties;
-  
-        // Log the values to CloudWatch
-        log('Uploading certificate PEM:', certPem);
-        log('Uploading private key:', privateKey);
-  
-        try {
-          // Upload certificate PEM
-          await s3.putObject({
-            Bucket: bucketName,
-            Key: \`certs/\${thingName}/certificate.pem.crt\`,
-            Body: certPem,
-          }).promise();
-  
-          // Upload private key
-          await s3.putObject({
-            Bucket: bucketName,
-            Key: \`certs/\${thingName}/private.pem.key\`,
-            Body: privateKey,
-          }).promise();
-  
-          log('Certificate and private key uploaded successfully');
-          return { Status: 'SUCCESS' };
-        } catch (error) {
-          log('Error uploading certificate or private key:', error);
-          throw error;
-        }
-      };
-    `),
+  // Store the certificate and private key in Secrets Manager as a JSON object
+  new secretsmanager.Secret(scope, `IoTSecret-${thingName}`, {
+    secretName: `IoT/${thingName}/certs`,  // You can adjust the naming convention as needed
+    secretObjectValue: {
+      certificatePem: cdk.SecretValue.unsafePlainText(certPem),
+      privateKey: cdk.SecretValue.unsafePlainText(privateKey),
+    },
   });
-
-  // Grant the Lambda function permission to write to S3
-  bucket.grantPut(s3UploadLambda);
 
   // Extract certificate ARN
   const certArn = certResource.getResponseField('certificateArn');
