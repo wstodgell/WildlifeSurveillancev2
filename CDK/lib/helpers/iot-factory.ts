@@ -102,30 +102,6 @@ export function createIoTThing(
   // Grant the Lambda function permission to write to S3
   bucket.grantPut(s3UploadLambda);
 
-  // Create a custom resource to invoke the Lambda function for uploading the certificate and private key to S3
-  new cr.AwsCustomResource(scope, `UploadCertToS3-${thingName}`, {
-    onCreate: {
-      service: 'Lambda',
-      action: 'invoke',
-      parameters: {
-        FunctionName: s3UploadLambda.functionArn,
-        Payload: JSON.stringify({
-          certPem: certPem,
-          privateKey: privateKey,
-          bucketName: bucket.bucketName,
-          thingName: thingName,
-        }),
-      },
-      physicalResourceId: cr.PhysicalResourceId.of(`UploadCertToS3-${thingName}`), // Add physicalResourceId here
-    },
-    policy: cr.AwsCustomResourcePolicy.fromStatements([
-      new iam.PolicyStatement({
-        actions: ['lambda:InvokeFunction'],
-        resources: [s3UploadLambda.functionArn],
-      }),
-    ]),
-  });
-
   // Extract certificate ARN
   const certArn = certResource.getResponseField('certificateArn');
 
