@@ -20,4 +20,4 @@ TOPIC = "test/transmit"  # The MQTT topic where data will be sent
 
 while(True):
     time.sleep(1)  # Wait 20 seconds before sending the next update
-    print("testing!!!")
+    print("Testing!!!")

@@ -4,6 +4,7 @@ import * as cr from 'aws-cdk-lib/custom-resources';
 import * as iot from 'aws-cdk-lib/aws-iot';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import { createIoTThing } from './helpers/iot-factory'; // Import the factory function
 
 export class IotCodeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -29,8 +30,8 @@ export class IotCodeStack extends cdk.Stack {
       },
     });
 
-    // Create IoT Thing
-    const iotThing = new iot.CfnThing(this, 'IoTThing', {
+    // Create IoT Thing and identify it with the cloudformation stack IoTThing
+    const iotGPSThing = new iot.CfnThing(this, 'IoTThing', {
       thingName: 'ElkGPSCollar',
     });
 
@@ -59,7 +60,7 @@ export class IotCodeStack extends cdk.Stack {
     // Attach the certificate to the IoT Thing
     new iot.CfnThingPrincipalAttachment(this, 'IoTThingCertAttachment', {
       principal: certArn,
-      thingName: iotThing.thingName!,
+      thingName: iotGPSThing.thingName!,
     });
 
     // Attach the policy to the certificate
@@ -67,5 +68,7 @@ export class IotCodeStack extends cdk.Stack {
       principal: certArn,
       policyName: iotPolicy.policyName!,
     });
+
+    createIoTThing(this, 'TestThing', 'IoTDevicePolicy-Test', cdk.Stack.of(this).region);
   }
 }
