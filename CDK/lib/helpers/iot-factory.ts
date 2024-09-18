@@ -59,32 +59,42 @@ export function createIoTThing(
   console.log('Certificate PEM:', certPem);
   console.log('Private Key:', privateKey);
 
-  // Define a Lambda function to upload the certificate and private key to S3
   const s3UploadLambda = new lambda.Function(scope, `S3UploadLambda-${thingName}`, {
-    runtime: lambda.Runtime.NODEJS_18_X,
+    runtime: lambda.Runtime.NODEJS_14_X,
     handler: 'index.handler',
     code: lambda.Code.fromInline(`
       const AWS = require('aws-sdk');
       const s3 = new AWS.S3();
-
+      const log = console.log;
+  
       exports.handler = async function(event) {
         const { certPem, privateKey, bucketName, thingName } = event.ResourceProperties;
-
-        // Upload certificate PEM
-        await s3.putObject({
-          Bucket: bucketName,
-          Key: \`certs/\${thingName}/certificate.pem.crt\`,
-          Body: certPem,
-        }).promise();
-
-        // Upload private key
-        await s3.putObject({
-          Bucket: bucketName,
-          Key: \`certs/\${thingName}/private.pem.key\`,
-          Body: privateKey,
-        }).promise();
-
-        return { Status: 'SUCCESS' };
+  
+        // Log the values to CloudWatch
+        log('Uploading certificate PEM:', certPem);
+        log('Uploading private key:', privateKey);
+  
+        try {
+          // Upload certificate PEM
+          await s3.putObject({
+            Bucket: bucketName,
+            Key: \`certs/\${thingName}/certificate.pem.crt\`,
+            Body: certPem,
+          }).promise();
+  
+          // Upload private key
+          await s3.putObject({
+            Bucket: bucketName,
+            Key: \`certs/\${thingName}/private.pem.key\`,
+            Body: privateKey,
+          }).promise();
+  
+          log('Certificate and private key uploaded successfully');
+          return { Status: 'SUCCESS' };
+        } catch (error) {
+          log('Error uploading certificate or private key:', error);
+          throw error;
+        }
       };
     `),
   });

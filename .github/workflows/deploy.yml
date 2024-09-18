@@ -116,10 +116,18 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
+      # Check if GPS Docker image exists in ECR
+      - name: Check if GPS Docker Image exists
+        id: gps_image_exists
+        run: |
+          aws ecr describe-images --repository-name ${{ env.GPS_ECR_URI }} --image-ids imageTag=latest || echo "GPS image not found"
+        continue-on-error: true
+
       # Build and push the Docker image to ECR
       # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
       # we broaden the scope to.
       - name: Build and Push *GPS* Docker Image
+        if: failure()
         run: |
           docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
           docker push ${{ env.GPS_ECR_URI }}:latest
@@ -131,7 +139,15 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
+      # Check if TEST Docker image exists in ECR
+      - name: Check if TEST Docker Image exists
+        id: test_image_exists
+        run: |
+          aws ecr describe-images --repository-name ${{ env.TEST_ECR_URI }} --image-ids imageTag=latest || echo "Test image not found"
+        continue-on-error: true
+
       - name: Build and Push *Test* Docker Image
+        if: failure()
         run: |
           docker build -t ${{ env.TEST_ECR_URI }}:latest -f IoTMockSensors/IoT_Test/Dockerfile IoTMockSensors/IoT_Test
           docker push ${{ env.TEST_ECR_URI }}:latest
