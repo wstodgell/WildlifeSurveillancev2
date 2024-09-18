@@ -61,7 +61,7 @@ export function createIoTThing(
 
   // Define a Lambda function to upload the certificate and private key to S3
   const s3UploadLambda = new lambda.Function(scope, `S3UploadLambda-${thingName}`, {
-    runtime: lambda.Runtime.NODEJS_14_X,
+    runtime: lambda.Runtime.NODEJS_18_X,
     handler: 'index.handler',
     code: lambda.Code.fromInline(`
       const AWS = require('aws-sdk');
@@ -106,6 +106,7 @@ export function createIoTThing(
           thingName: thingName,
         }),
       },
+      physicalResourceId: cr.PhysicalResourceId.of(`UploadCertToS3-${thingName}`), // Add physicalResourceId here
     },
     policy: cr.AwsCustomResourcePolicy.fromStatements([
       new iam.PolicyStatement({
