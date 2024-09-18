@@ -3,6 +3,7 @@ import * as cr from 'aws-cdk-lib/custom-resources';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 
 export function createIoTThing(
   scope: Construct,
@@ -58,40 +59,58 @@ export function createIoTThing(
   console.log('Certificate PEM:', certPem);
   console.log('Private Key:', privateKey);
 
+  // Define a Lambda function to upload the certificate and private key to S3
+  const s3UploadLambda = new lambda.Function(scope, `S3UploadLambda-${thingName}`, {
+    runtime: lambda.Runtime.NODEJS_14_X,
+    handler: 'index.handler',
+    code: lambda.Code.fromInline(`
+      const AWS = require('aws-sdk');
+      const s3 = new AWS.S3();
+
+      exports.handler = async function(event) {
+        const { certPem, privateKey, bucketName, thingName } = event.ResourceProperties;
+
+        // Upload certificate PEM
+        await s3.putObject({
+          Bucket: bucketName,
+          Key: \`certs/\${thingName}/certificate.pem.crt\`,
+          Body: certPem,
+        }).promise();
+
+        // Upload private key
+        await s3.putObject({
+          Bucket: bucketName,
+          Key: \`certs/\${thingName}/private.pem.key\`,
+          Body: privateKey,
+        }).promise();
+
+        return { Status: 'SUCCESS' };
+      };
+    `),
+  });
+
+  // Grant the Lambda function permission to write to S3
+  bucket.grantPut(s3UploadLambda);
+
+  // Create a custom resource to invoke the Lambda function for uploading the certificate and private key to S3
   new cr.AwsCustomResource(scope, `UploadCertToS3-${thingName}`, {
     onCreate: {
-      service: 'S3',
-      action: 'putObject',
+      service: 'Lambda',
+      action: 'invoke',
       parameters: {
-        Bucket: bucket.bucketName,
-        Key: `certs/${thingName}/certificate.pem.crt`,
-        Body: certPem,
+        FunctionName: s3UploadLambda.functionArn,
+        Payload: JSON.stringify({
+          certPem: certPem,
+          privateKey: privateKey,
+          bucketName: bucket.bucketName,
+          thingName: thingName,
+        }),
       },
-      physicalResourceId: cr.PhysicalResourceId.of(`UploadCertToS3-${thingName}`),
     },
     policy: cr.AwsCustomResourcePolicy.fromStatements([
       new iam.PolicyStatement({
-        actions: ['s3:PutObject'],
-        resources: [bucket.arnForObjects('*')],
-      }),
-    ]),
-  });
-  
-  new cr.AwsCustomResource(scope, `UploadPrivateKeyToS3-${thingName}`, {
-    onCreate: {
-      service: 'S3',
-      action: 'putObject',
-      parameters: {
-        Bucket: bucket.bucketName,
-        Key: `certs/${thingName}/private.pem.key`,
-        Body: privateKey,
-      },
-      physicalResourceId: cr.PhysicalResourceId.of(`UploadPrivateKeyToS3-${thingName}`),
-    },
-    policy: cr.AwsCustomResourcePolicy.fromStatements([
-      new iam.PolicyStatement({
-        actions: ['s3:PutObject'],
-        resources: [bucket.arnForObjects('*')],
+        actions: ['lambda:InvokeFunction'],
+        resources: [s3UploadLambda.functionArn],
       }),
     ]),
   });
