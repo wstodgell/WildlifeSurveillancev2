@@ -59,6 +59,9 @@ export function createIoTThing(
   console.log('Private Key:', privateKey);
 
   // Store the certificate and private key in Secrets Manager as a JSON object
+  // While the SecretValue.unsafePlainText is convenient for testing, 
+  // it's not recommended for production use since it exposes the value in the CDK code. 
+  // For production, consider using environment variables or KMS encryption.
   new secretsmanager.Secret(scope, `IoTSecret-${thingName}`, {
     secretName: `IoT/${thingName}/certs`,  // You can adjust the naming convention as needed
     secretObjectValue: {
