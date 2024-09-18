@@ -1,0 +1,41 @@
+json:
+
+{
+  "certPem": "-----BEGIN CERTIFICATE-----\nMIIDWTCCAkGgAwIBAgIUWhKHLSZ2HoyW+R/Vvxo9kQYuQCAwDQYJKoZIhvcNAQEL\nBQAwTTFLMEkGA1UECwxCQW1hem9uIFdlYiBTZXJ2aWNlcyBPPUFtYXpvbi5jb20g\nSW5jLiBMPVNlYXR0bGUgU1Q9V2FzaGluZ3RvbiBDPVVTMB4XDTI0MDkxODE4MjMx\nN1oXDTQ5MTIzMTIzNTk1OVowHjEcMBoGA1UEAwwTQVdTIElvVCBDZXJ0aWZpY2F0\nZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMD/YJLOlaASWlFR/cXu\n2Os52G2qySolOTDCZS43xREsvyfgimnzB4kHXD2b+qN44Cuiqvii/xnqZ0Xez2DX\nKlRk9gLco0rXotqYLoYjvDBacI+Hy4wKtGvz+LMmiSTNJbZMHqPLBknalsDLaGdI\nEVMsUfZB115N6ENqTz49m86bjNMVG09txIlsBRFbdhsNbDNxDynDKSrVnECx0nPq\nLYRj0/sE5TU3lpgtvesgaQWZ68fFXirpjq1YCDwGlf1ZjV/i0nXFHazeVD7pRdUd\nRrwawSeIW5TYMYmUo0srReen7AcoWUcYyvGmjIKO6mqY7N8W1hVR4r8EHzSZ5Ha9\ntMMCAwEAAaNgMF4wHwYDVR0jBBgwFoAUz1EADpyaGM3PdZNbpQqaTB3poW8wHQYD\nVR0OBBYEFABpXgKhq974bz1j+LKi8eu4nMXqMAwGA1UdEwEB/wQCMAAwDgYDVR0P\nAQH/BAQDAgeAMA0GCSqGSIb3DQEBCwUAA4IBAQDVHS9bLAcFZJ82/l3mHZSNICO1\nSue9EXgFzHtmbldkWkGWuWbyJ+pQtRzf06SFvXsalR2ack3abMsCGyrYb35vLvdu\nxokoyuAdG2ny5bi1O47WqFd9UoWR3WssMOG/zq1Cvt4Rat1NWpyYQPAejBGm2nDN\n69OtpOBFYMhqNiV4eW3tXxdlHSYdA+ORFGy72rBY72yFA0myXHHphCv52LjKJ18m\nyl0GuEt2fmJnT5SgH3K1BJgPechmXnDXE+E9GXetNJCeNG4HmwGyjRQt/2uEdrWa\nACohPGyiiK1B8Szlr1Kr0QuJxnu1lFGW92WwkO6OoDMRa+IqEyZE4k9Z6/fi\n-----END CERTIFICATE-----",
+  "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEAwP9gks6VoBJaUVH9xe7Y6znYbarJKiU5MMJlLjfFESy/J+CK\nafMHiQdcPZv6o3jgK6Kq+KL/GepnRd7PYNcqVGT2AtyjStei2pguhiO8MFpwj4fL\njAq0a/P4syaJJM0ltkweo8sGSdqWwMtoZ0gRUyxR9kHXXk3oQ2pPPj2bzpuM0xUb\nT23EiWwFEVt2Gw1sM3EPKcMpKtWcQLHSc+othGPT+wTlNTeWmC296yBpBZnrx8Ve\nKumOrVgIPAaV/VmNX+LSdcUdrN5UPulF1R1GvBrBJ4hblNgxiZSjSytF56fsByhZ\nRxjK8aaMgo7qapjs3xbWFVHivwQfNJnkdr20wwIDAQABAoIBAF65eQbVCi8kktuy\n6GFLl3/sRkOdPVrIJke+QbbrfHevhKrn1EeoFpy01hsPAXdWjoAcONoL9jUcDVAH\nybT4JjiBzRUega7sI2wyoTMJOwZofTKVLdwwLNmHRxt24H0Fi2rr9WXi8dUxyiga\nLcXzYz11VU0Oh8wrZMIh3X7o8h329HApbNHG63/nwHFLQRLYTxN6JqcOAZjnWAAY\nkZ4guztAxg3ZvHOUkDyj/NIXD6C8UJVjeGWiKAaK7jtx3KnAlO4wcH62s5YWVfD5\nRqB4KESdSGU0O+Ts4nmQdiI5ZUyWTIpfdxW/NVEFgIMxy2/rq5sOnrZO/IORnQcM\ns0uizQECgYEA4ff0b2xSWCbL5p6XXW1+Whs0dyNmeo7foe9kQnNGt8YGlwr8y3ya\nri9Ltgalx2VqZCN8nXpZHWIxb/bniogpJ2TdriBdvF71R8snETvtx7eChyRv1UdM\nhW9nw394JV/XMrdBZcE51HYN+Z6unQXZXARC4NoKzUL4j2/4wO/pZ8ECgYEA2qWp\nfWYP11wW4EhM+71CJHL89Haztp/WU6aRb8vGIhj/fWoGRH8oqhFFiPNMkYz9XRCi\nOeyJZNMcHW6mKr0UAxx7yPVZOiQkxUZiXquQXR+kVOyx6YHL2yqgX5txGvm5QKso\nHxxyjoIhrJ+CJUzAfil1UJMEVen0OM5PNYK83YMCgYEAiRnbSdtsHqXzYspoRjxP\nxDXrYDmvTL7w+px3tUWh65CPoQb+mCvS4co6Yoen/9INehJ54kZAWW6hVjB1DX1N\nkuRFCAgFN2xZ36Rn4LH+tAUogfxeigXHbNJKH7hwWiTLOa8sU6OoBbtXAVQA166b\n0ZOYTDqfASkYDFdAkzc840ECgYBOhmqtt6b+0HsCx9SmIJ2Nm6KPZcY7U4JU/qCD\nBys8eb/gWeCwXv7KvXM8sSyRpZIlB2FL7lCV3l/djiytcsSqLWOjk8Ic6HgwRYv0\nticd2sxZF7z5wPzm1JNOYvQnHQLUX+QD8GKQHdpcNdk27i6/4MHaU0KeXGyyrh2y\neSa9YwKBgQCpaVBSotfK2Nmgy09WYMDVwlCFzefFPbsbfHzu6b1wDitiD1gH6cAV\nngk6dFjHsNMZ8nYe34tiaTtRN9mxhgvG+w7HgzVlf7KqLlO0cIVwIr9y/simfN6m\nJhbNQ4eUSqmbG5G9aT6hDh0uS6kWXc9M73BhJcY3KZwvjfXn28yQlg==\n-----END RSA PRIVATE KEY-----",
+  "bucketName": "iot-certificates-730335377753",
+  "thingName": "IoT_Test"
+}
+
+
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3();
+
+exports.handler = async function(event) {
+    const { certPem, privateKey, bucketName, thingName } = event;
+
+    console.log('Uploading certificate PEM:', certPem);
+    console.log('Uploading private key:', privateKey);
+
+    try {
+        // Upload certificate PEM to S3
+        await s3.putObject({
+            Bucket: bucketName,
+            Key: `certs/${thingName}/certificate.pem.crt`,
+            Body: certPem,
+        }).promise();
+
+        // Upload private key to S3
+        await s3.putObject({
+            Bucket: bucketName,
+            Key: `certs/${thingName}/private.pem.key`,
+            Body: privateKey,
+        }).promise();
+
+        console.log('Certificate and private key uploaded successfully');
+        return { Status: 'SUCCESS' };
+    } catch (error) {
+        console.error('Error uploading:', error);
+        throw error;
+    }
+};
