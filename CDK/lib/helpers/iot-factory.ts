@@ -50,9 +50,13 @@ export function createIoTThing(
     ]),
   });
 
-  // Extract certificate and private key
-  const certPem = certResource.getResponseField('certificatePem') ?? '';
-  const privateKey = certResource.getResponseField('keyPair.PrivateKey') ?? '';
+  // Extract certificate and private key - sanitize the \ns because it's causing error
+  const certPem = (certResource.getResponseField('certificatePem') ?? '').replace(/\\n/g, '\n');
+  const privateKey = (certResource.getResponseField('keyPair.PrivateKey') ?? '').replace(/\\n/g, '\n');
+
+  // Log the values for debugging purposes (optional)
+  console.log('Certificate PEM:', certPem);
+  console.log('Private Key:', privateKey);
 
   new cr.AwsCustomResource(scope, `UploadCertToS3-${thingName}`, {
     onCreate: {
