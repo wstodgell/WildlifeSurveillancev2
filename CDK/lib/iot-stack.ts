@@ -6,8 +6,11 @@ export class IotCodeStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Pass the bucket into the createIoTThing function
-    createIoTThing(this, 'GPSThing', 'IoTDevicePolicy-GPS', cdk.Stack.of(this).region);
-    createIoTThing(this, 'TestThing', 'IoTDevicePolicy-Test', cdk.Stack.of(this).region);
+    const GPSThingName = 'GPSThing'
+    const TestThingName = 'TestThing'
+    const policyName = 'IoTDevicePolicy-'
+
+    createIoTThing(this, GPSThingName, (policyName + GPSThingName), cdk.Stack.of(this).region);
+    createIoTThing(this, TestThingName, (policyName + TestThingName), cdk.Stack.of(this).region);
   }
 }
