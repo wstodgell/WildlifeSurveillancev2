@@ -2,34 +2,22 @@ import time
 import boto3
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import logging
+import os
+import json
 
-
-import logging
+# Setup logging
 logging.basicConfig(level=logging.INFO)
 
-# Test Logging
-logging.info("This is Info Logging")
-logging.error("This is error logging")
-
-# Endpoint to IoT_Cod.  IoT CORE > Settings -> 
-IOTC_ENDPOINT = "a3hakddmh1b2fi-ats.iot.us-east-1.amazonaws.com"  # Replace with your AWS IoT Core endpoint
-
-#CLIENT_ID identifies *this* python script to IoT Core.
+# AWS IoT Core Endpoint and Client ID
+IOTC_ENDPOINT = "a9owkpr2o3vth-ats.iot.us-east-1.amazonaws.com"
 CLIENT_ID = "TestTransmitter"
-TOPIC = "test/transmit"  # The MQTT topic where data will be sent
-# **********************************
-
-# Use this code snippet in your app.
-# If you need more information about configurations
-# or implementing the sample code, visit the AWS docs:
-# https://aws.amazon.com/developer/language/python/
+TOPIC = "test/transmit"
 
 import boto3
 from botocore.exceptions import ClientError
 
-
+# Function to retrieve secrets
 def get_secret():
-
     secret_name = "IoT/TestThing/certs"
     region_name = "us-east-1"
 
@@ -44,14 +32,89 @@ def get_secret():
         get_secret_value_response = client.get_secret_value(
             SecretId=secret_name
         )
+        secret = get_secret_value_response.get('SecretString', None)
+        
+        # Debugging: Print the raw secret
+        print("Raw Secret Retrieved: ", secret)
+
+        # Return the secret string directly (not as JSON)
+        return secret
+
     except ClientError as e:
-        # For a list of exceptions thrown, see
-        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        print(f"Error retrieving secret: {e}")
         raise e
 
-    secret = get_secret_value_response['SecretString']
+def parse_secret(secret_string):
+    """Manually extract the private key and certificate from the secret string"""
+    
+    # Extract private key and certificate from the raw string
+    private_key_start = secret_string.find("-----BEGIN RSA PRIVATE KEY-----")
+    private_key_end = secret_string.find("-----END RSA PRIVATE KEY-----") + len("-----END RSA PRIVATE KEY-----")
+    private_key = secret_string[private_key_start:private_key_end]
 
-    # Your code goes here.
-    print(secret)
+    certificate_start = secret_string.find("-----BEGIN CERTIFICATE-----")
+    certificate_end = secret_string.find("-----END CERTIFICATE-----") + len("-----END CERTIFICATE-----")
+    certificate = secret_string[certificate_start:certificate_end]
 
-get_secret()
+    return private_key, certificate
+
+def write_to_temp_file(content, filename_prefix):
+    """Write the content to a temporary file and return the file path"""
+    temp_file_path = f"./{filename_prefix}.pem"
+    with open(temp_file_path, 'w') as f:
+        f.write(content)
+    return temp_file_path
+
+# Function to establish an MQTT connection
+def mqtt_connect():
+    # Path to the Root CA file
+    root_ca = "E:/Code/WildlifeSurveillance/IoTMockSensors/IoT_Test/AWS_Certs/AmazonRootCA1.pem"
+
+    # Retrieve certs from Secrets Manager
+    secret = get_secret()
+
+    # Parse the secret manually (since it's not valid JSON)
+    private_key, certificate = parse_secret(secret)
+
+    # Write the certificate and private key to temporary files
+    cert_file = write_to_temp_file(certificate, 'cert')
+    key_file = write_to_temp_file(private_key, 'private_key')
+
+    # Initialize the MQTT client
+    mqtt_client = AWSIoTMQTTClient(CLIENT_ID)
+    mqtt_client.configureEndpoint(IOTC_ENDPOINT, 8883)  # Port 8883 for secure MQTT communication
+    mqtt_client.configureCredentials(root_ca, key_file, cert_file)
+
+    # Configure the MQTT client connection parameters
+    mqtt_client.configureOfflinePublishQueueing(-1)  # Infinite offline publish queueing
+    mqtt_client.configureDrainingFrequency(2)  # Draining: 2 Hz
+    mqtt_client.configureConnectDisconnectTimeout(10)  # 10 sec
+    mqtt_client.configureMQTTOperationTimeout(5)  # 5 sec
+
+    # Connect to AWS IoT Core
+    if mqtt_client.connect():
+        logging.info("Connected to AWS IoT Core")
+    else:
+        logging.error("Failed to connect to AWS IoT Core")
+
+    return mqtt_client
+
+# Function to publish a message to the MQTT topic
+def publish_message(mqtt_client):
+    message = {
+        "message": "Hello from TestThing!",
+        "timestamp": time.time()
+    }
+    mqtt_client.publish(TOPIC, json.dumps(message), 1)
+    logging.info(f"Published: {json.dumps(message)} to {TOPIC}")
+
+if __name__ == "__main__":
+    # Connect to AWS IoT Core
+    mqtt_client = mqtt_connect()
+
+    # Publish message
+    publish_message(mqtt_client)
+
+    # Disconnect after publishing
+    mqtt_client.disconnect()
+    logging.info("Disconnected from AWS IoT Core")
