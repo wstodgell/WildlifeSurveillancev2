@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN ls -la /app && cat /app/transmitter.py
 
 # Define the entrypoint: Run Mock_GPSCollar_AWS.py when the container starts
-CMD ["python", "transmitter.py"]
+## CMD ["python", "transmitter.py"]
