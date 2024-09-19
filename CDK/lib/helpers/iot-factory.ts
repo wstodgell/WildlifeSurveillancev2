@@ -80,8 +80,11 @@ export function createIoTThing(
   });
 
   // Attach policy to the certificate
-  new iot.CfnPolicyPrincipalAttachment(scope, `IoTPolicyAttachment-${thingName}`, {
+  const policyPrincipalAttachment = new iot.CfnPolicyPrincipalAttachment(scope, `IoTPolicyAttachment-${thingName}`, {
     principal: certArn,
     policyName: iotPolicy.policyName!,
   });
+
+  // Add dependency: ensure the IoT policy is created before attaching it to the certificate
+  policyPrincipalAttachment.node.addDependency(iotPolicy);
 }
