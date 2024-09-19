@@ -114,6 +114,9 @@ if __name__ == "__main__":
 
     # Publish message
     publish_message(mqtt_client)
+    publish_message(mqtt_client)
+    publish_message(mqtt_client)
+    publish_message(mqtt_client)
 
     # Disconnect after publishing
     mqtt_client.disconnect()
