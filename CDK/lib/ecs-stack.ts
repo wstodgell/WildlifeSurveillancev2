@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 
 export class EcsStack extends cdk.Stack {
@@ -12,9 +13,11 @@ export class EcsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Import the ECR repository URIs created in the EcrStack - required for containers to get the images
     const GPSEcrRepositoryUri = cdk.Fn.importValue('GPSEcrRepositoryUri');
     const TestEcrRepositoryUri = cdk.Fn.importValue('TestEcrRepositoryUri');
 
+    // Import the ECS task execution role created in EcrStack - required so Fargate can access
     const ecsTaskExecutionRoleArn = cdk.Fn.importValue('EcsTaskExecutionRoleArn');
     const ecsTaskExecutionRole = iam.Role.fromRoleArn(this, 'ImportedEcsTaskExecutionRole', ecsTaskExecutionRoleArn);
 
@@ -27,7 +30,7 @@ export class EcsStack extends cdk.Stack {
       retention: logs.RetentionDays.ONE_WEEK,   // Adjust retention period as needed
     });
 
-     // Create an ECS Cluster
+     // Create an ECS Cluster for ALL IoT Mock scripts
      const cluster = new ecs.Cluster(this, 'IoTCluster', {
       clusterName: 'IoTCluster',
       // The default Fargate configurations are already set up,
@@ -41,72 +44,102 @@ export class EcsStack extends cdk.Stack {
       exportName: 'EcsClusterName'
     });
 
-    // Create a Fargate Task Definition for IoT-GPS
-    const GPSTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTGPSTaskDefinition', {
-      family: 'IoT-GPS',
-      cpu: 256, // Adjust CPU if needed
-      memoryLimitMiB: 512, // Adjust memory if needed
-      executionRole: ecsTaskExecutionRole,
+    // ***********************************  SETUP GPS ROLES AND CONTAINERS
+    // Retrieve the secrets for TestThing and GPSThing from AWS Secrets Manager
+    
+    /// **IMPORTANT** - secret manager SPECIFIC to this string where secrets are stored.
+    // Later created in iot-stack in format of secretName: `IoT/${thingName}/certs`,  
+    const iotGPSThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GPSThingSecret', 'IoT/GPSThing/certs');
+
+    // Create a Task Role for GPS task that can access GPSThing's secret
+    const gpsTaskRole = new iam.Role(this, 'GPSTaskRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'), // Allows ECS tasks to assume this role
+      description: 'Task role for GPS task with permissions for Secrets Manager',
     });
 
-     // Create a Fargate Task Definition for IoT-TEST
-     const TestTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTTestTaskDefinition', {
-      family: 'IoT-Test',
-      cpu: 256, // Adjust CPU if needed
-      memoryLimitMiB: 512, // Adjust memory if needed
-      executionRole: ecsTaskExecutionRole,
+    // Grant the GPS task role permission to read GPSThing's secret
+    iotGPSThingSecret.grantRead(gpsTaskRole);
+
+    // Create a Fargate Task Definition for IoT-GPS
+    const GPSTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTGPSTaskDefinition', {
+      family: 'IoT-GPS', // Logical family name of this task definition
+      cpu: 256, // CPU units (adjust as needed)
+      memoryLimitMiB: 512, // Memory in MB (adjust as needed)
+      executionRole: ecsTaskExecutionRole, // Use the execution role for pulling images and starting tasks
+      taskRole: gpsTaskRole, // Task role used to interact with Secrets Manager for GPSThing
     });
-    
-//********** GPS 
-    // Add container to the Task Definition
+
+    // Define the container for the GPS task, pulled from the ECR repository
     const GPSContainer = GPSTaskDefinition.addContainer('GPSContainer', {
-      image: ecs.ContainerImage.fromRegistry(GPSEcrRepositoryUri),  // Use imported ECR URI
-      memoryLimitMiB: 512, // Adjust memory if needed
-      cpu: 256, // Adjust CPU if needed
+      image: ecs.ContainerImage.fromRegistry(GPSEcrRepositoryUri), // Pulls container image from ECR
+      memoryLimitMiB: 512, // Container memory limit
+      cpu: 256, // Container CPU limit
       logging: new ecs.AwsLogDriver({
-        streamPrefix: 'IoT-GPS',
-        logGroup: logGroup
+        streamPrefix: 'IoT-GPS', // Prefix for the CloudWatch log stream
+        logGroup: logGroup, // The log group where container logs will be sent
       }),
     });
 
-    // Set networking mode for task (awsvpc)
-    GPSContainer.addPortMappings({
+     // Set networking mode for task (awsvpc)
+     GPSContainer.addPortMappings({
       containerPort: 80, // Adjust if your container exposes a different port
     });
 
     // Add Fargate Service to the IoTCluster
     const GPSFargateService = new ecs.FargateService(this, 'IoTGPSService', {
-      cluster,
-      taskDefinition: GPSTaskDefinition,
+      cluster, // The ECS cluster where the task will run
+      taskDefinition: GPSTaskDefinition, // Task definition that defines the container
       assignPublicIp: true, // Ensure tasks are reachable via public IP if needed
       desiredCount: 1, // Adjust based on how many instances you want running
-      enableExecuteCommand: true, // Enable ECS Exec
+      enableExecuteCommand: true, // Enable ECS Exec for debugging into the container
     });
 
-//********** TEST 
-// Add container to the Task Definition
-    const TestContainer = TestTaskDefinition.addContainer('TestContainer', {
-      image: ecs.ContainerImage.fromRegistry(TestEcrRepositoryUri),  // Use imported ECR URI
-      memoryLimitMiB: 512, // Adjust memory if needed
-      cpu: 256, // Adjust CPU if needed
+    // ********************  SETUP TEST ROLES AND CONTAINERS
+
+
+    const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
+
+    // Create a Task Role for the Test task that can access TestThing's secret
+    const testTaskRole = new iam.Role(this, 'TestTaskRole', {
+      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'), // Allows ECS tasks to assume this role
+      description: 'Task role for Test task with permissions for Secrets Manager',
+    });
+
+    // Grant the Test task role permission to read TestThing's secret
+    iotTestThingSecret.grantRead(testTaskRole); // !!! THIS IS NEW !!
+
+    // Create the Fargate task definition for the Test task
+    const testTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTTestTaskDefinition', {
+      family: 'IoT-Test', // Logical family name of this task definition
+      cpu: 256, // CPU units (adjust as needed)
+      memoryLimitMiB: 512, // Memory in MB (adjust as needed)
+      executionRole: ecsTaskExecutionRole, // Use the execution role for pulling images and starting tasks
+      taskRole: testTaskRole, // Task role used to interact with Secrets Manager for TestThing
+    });
+
+    // Define the container for the Test task, pulled from the ECR repository
+    const testContainer = testTaskDefinition.addContainer('TestContainer', {
+      image: ecs.ContainerImage.fromRegistry(TestEcrRepositoryUri), // Pulls container image from ECR
+      memoryLimitMiB: 512, // Container memory limit
+      cpu: 256, // Container CPU limit
       logging: new ecs.AwsLogDriver({
-        streamPrefix: 'IoT-Test',
-        logGroup: logGroup
+        streamPrefix: 'IoT-Test', // Prefix for the CloudWatch log stream
+        logGroup: logGroup, // The log group where container logs will be sent
       }),
     });
 
-    // Set networking mode for task (awsvpc)
-    TestContainer.addPortMappings({
-      containerPort: 81, // Adjust if your container exposes a different port
+    // Set port mapping for the Test container
+    testContainer.addPortMappings({
+      containerPort: 81, // Port exposed by the container (adjust if necessary)
     });
 
-    // Add Fargate Service to the IoTCluster
-    const TestFargateService = new ecs.FargateService(this, 'IoTTestService', {
-      cluster,
-      taskDefinition: TestTaskDefinition,
-      assignPublicIp: true, // Ensure tasks are reachable via public IP if needed
-      desiredCount: 1, // Adjust based on how many instances you want running
-      enableExecuteCommand: true, // Enable ECS Exec
+    // Create an ECS Fargate service for the Test task
+    const testFargateService = new ecs.FargateService(this, 'IoTTestService', {
+      cluster, // The ECS cluster where the task will run
+      taskDefinition: testTaskDefinition, // Task definition that defines the container
+      assignPublicIp: true, // Assign a public IP address so the service is publicly accessible
+      desiredCount: 1, // Number of task instances to run (scale this as needed)
+      enableExecuteCommand: true, // Enable ECS Exec for debugging into the container
     });
 
 
@@ -130,10 +163,11 @@ export class EcsStack extends cdk.Stack {
       exportName: 'TestTaskDefinitionFamily'
     });
 
+    // Output the name of the Test Fargate Service
     new cdk.CfnOutput(this, 'TestFargateServiceName', {
-      value: TestFargateService.serviceName,
+      value: testFargateService.serviceName, // Name of the service
       description: 'Name of the Test ECS Fargate Service',
-      exportName: 'TestFargateServiceName'
+      exportName: 'TestFargateServiceName',
     });
   }
 }
