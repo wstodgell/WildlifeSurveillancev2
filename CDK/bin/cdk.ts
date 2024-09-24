@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { EcrStack } from '../lib/ecr-stack';
 import { EcsStack } from '../lib/ecs-stack';
 import { IotCodeStack } from '../lib/iot-stack';
+import { Ec2Stack } from '../lib/ec2-stack';
 
 const app = new cdk.App();
 
@@ -18,5 +19,9 @@ new EcsStack(app, 'EcsStack', {
 });
 
 new IotCodeStack(app, 'IotCodeStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
+
+new Ec2Stack(app, 'Ec2Stack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
