@@ -97,16 +97,43 @@ export class EcsStack extends cdk.Stack {
     // ********************  SETUP TEST ROLES AND CONTAINERS
 
 
-    const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
+    //const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
 
-    // Create a Task Role for the Test task that can access TestThing's secret
-    const testTaskRole = new iam.Role(this, 'TestTaskRole', {
+    //This role is created so that TEST TRansmitter can read secrets, create/write to logs and also connect to IoT
+    const explicitTestTaskRole = new iam.Role(this, 'ExplicitTestTaskRole', {
+      roleName: 'ExplicitTestTaskRole',  // Assign a clear, meaningful name
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'), // Allows ECS tasks to assume this role
-      description: 'Task role for Test task with permissions for Secrets Manager',
+      description: 'Task role for Test task with permissions for IoT, CloudWatch, and Secrets Manager',
     });
-
-    // Grant the Test task role permission to read TestThing's secret
-    iotTestThingSecret.grantRead(testTaskRole); // !!! THIS IS NEW !!
+    
+    // Grant permissions for IoT Core
+    explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        "iot:DescribeEndpoint",
+        "iot:Publish"
+      ],
+      resources: ["*"],  // You can narrow this down to specific IoT resources if necessary
+    }));
+    
+    // Grant permissions for Secrets Manager
+    explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+      ],
+      resources: ["arn:aws:secretsmanager:us-east-1:<your-account-id>:secret:IoT/TestThing/certs"],
+    }));
+    
+    // Grant permissions for CloudWatch Logs
+    explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      resources: ["arn:aws:logs:us-east-1:<your-account-id>:log-group:/docker/transmitter:*"],
+    }));
+    
 
     // Create the Fargate task definition for the Test task
     const testTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTTestTaskDefinition', {
@@ -114,7 +141,7 @@ export class EcsStack extends cdk.Stack {
       cpu: 256, // CPU units (adjust as needed)
       memoryLimitMiB: 512, // Memory in MB (adjust as needed)
       executionRole: ecsTaskExecutionRole, // Use the execution role for pulling images and starting tasks
-      taskRole: testTaskRole, // Task role used to interact with Secrets Manager for TestThing
+      taskRole: explicitTestTaskRole, // Task role used to interact with Secrets Manager for TestThing
     });
 
     // Define the container for the Test task, pulled from the ECR repository
