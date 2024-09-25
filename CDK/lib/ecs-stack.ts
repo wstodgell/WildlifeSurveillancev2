@@ -13,9 +13,13 @@ export class EcsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Retrieve account ID and region from CDK context (passed in git hub actions deploy)
-    const accountId = this.node.tryGetContext('accountId');
-    const region = this.node.tryGetContext('region');
+    // Get AWS account ID and region from environment variables
+    const accountId = process.env.AWS_ACCOUNT_ID;
+    const region = process.env.AWS_REGION;
+
+    // Example of using these values in IAM Policy for Secrets Manager
+    const secretArn = `arn:aws:secretsmanager:${region}:${accountId}:secret:IoT/TestThing/certs`;
+
 
     // Import the ECR repository URIs created in the EcrStack - required for containers to get the images
     const GPSEcrRepositoryUri = cdk.Fn.importValue('GPSEcrRepositoryUri');
@@ -125,7 +129,7 @@ export class EcsStack extends cdk.Stack {
         "secretsmanager:GetSecretValue",
         "secretsmanager:DescribeSecret"
       ],
-      resources: [`arn:aws:secretsmanager:${region}:${accountId}:secret:IoT/TestThing/certs`],
+      resources: [secretArn],
     }));
     
     // Grant permissions for CloudWatch Logs
@@ -135,7 +139,7 @@ export class EcsStack extends cdk.Stack {
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
-      resources: [`arn:aws:logs:${region}:${accountId}:log-group:/docker/transmitter:*`],
+      resources: [secretArn],
     }));
     
 

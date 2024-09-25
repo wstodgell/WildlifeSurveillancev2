@@ -140,9 +140,9 @@ jobs:
       - name: Deploy ECS Stack
         run: |
           cd CDK
-          npx cdk deploy EcsStack --require-approval never \ 
-          --context accountId=${{ secrets.AWS_ACCOUNT_ID }} \
-          --context region=${{ secrets.AWS_REGION }}
+          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          export AWS_REGION=${{ secrets.AWS_REGION }}
+          npx cdk deploy EcsStack --require-approval never
 
       - name: Deploy IoT Stack
         run: |
