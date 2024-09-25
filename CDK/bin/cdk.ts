@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { EcrStack } from '../lib/iot/ecr-stack';
 import { EcsStack } from '../lib/iot/ecs-stack';
 import { IotCodeStack } from '../lib/iot/iot-stack';
+import { DataIngestionStack } from '../lib/platform/data-ingestion-stack';
 
 const app = new cdk.App();
 
@@ -18,6 +19,11 @@ new EcsStack(app, 'EcsStack', {
 });
 
 new IotCodeStack(app, 'IotCodeStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
+
+// *** PLATFORM
+new DataIngestionStack(app, 'DataIngestionStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
 

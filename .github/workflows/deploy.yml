@@ -151,3 +151,8 @@ jobs:
         run: |
           cd CDK
           npx cdk deploy IotCodeStack --require-approval never  # Specify the ECS stack explicitly
+
+      - name: Deploy Decoupled Infrastructure
+        run: |
+          cd CDK
+          npx cdk deploy DataIngestionStack --require-approval never
