@@ -110,7 +110,7 @@ export class EcsStack extends cdk.Stack {
 
 
     // Later created in iot-stack in format of secretName: `IoT/${thingName}/certs`,  
-    const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GPSThingSecret', 'IoT/TestThing/certs');
+    const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
 
     //This role is created so that TEST TRansmitter can read secrets, create/write to logs and also connect to IoT
     const explicitTestTaskRole = new iam.Role(this, 'ExplicitTestTaskRole', {
