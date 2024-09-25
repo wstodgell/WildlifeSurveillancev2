@@ -30,6 +30,7 @@ export function createIoTThing(
       ],
     },
   });
+  iotPolicy.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);  // Mark for deletion
 
   // Create IoT Certificate using custom resource
   const certResource = new cr.AwsCustomResource(scope, `CreateIoTCertificate-${thingName}`, {
@@ -41,6 +42,14 @@ export function createIoTThing(
       },
       physicalResourceId: cr.PhysicalResourceId.of(`CreateIoTCertificate-${thingName}`),
       region: region, // Use the current region
+    },
+    onDelete: {
+      service: 'Iot',
+      action: 'deleteCertificate',
+      parameters: {
+        certificateId: new cr.PhysicalResourceIdReference(), // Use the certificate ID from the create response
+      },
+      region: region,
     },
     policy: cr.AwsCustomResourcePolicy.fromStatements([
       new iam.PolicyStatement({
@@ -68,6 +77,7 @@ export function createIoTThing(
       certificatePem: cdk.SecretValue.unsafePlainText(certPem),
       privateKey: cdk.SecretValue.unsafePlainText(privateKey),
     },
+    removalPolicy: cdk.RemovalPolicy.DESTROY,  // Mark the secret for deletion
   });
 
   // Extract certificate ARN

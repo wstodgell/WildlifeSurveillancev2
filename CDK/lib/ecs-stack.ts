@@ -18,7 +18,7 @@ export class EcsStack extends cdk.Stack {
     const region = process.env.AWS_REGION;
 
     // Example of using these values in IAM Policy for Secrets Manager
-    const logArn = `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/docker/transmitter:*`;
+    const logArn = `arn:aws:logs:${region}:${accountId}:log-group:/docker/transmitter:*`;
 
 
     // Import the ECR repository URIs created in the EcrStack - required for containers to get the images
