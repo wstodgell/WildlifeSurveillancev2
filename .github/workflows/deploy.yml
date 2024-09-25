@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - "lib/platform/**" # This prevents the workflow from running when files in lib/platform/ change
   workflow_dispatch: # Manual trigger
 
 jobs:
