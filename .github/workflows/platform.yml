@@ -73,4 +73,6 @@ jobs:
           npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
 
       - name: Deploy Decoupled Infrastructure
-        run: npx cdk deploy DataIngestionStack --require-approval never
+        run: |
+          cd CDK
+          npx cdk deploy DataIngestionStack --require-approval never

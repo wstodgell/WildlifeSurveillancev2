@@ -5,7 +5,8 @@ on:
     branches:
       - master
     paths-ignore:
-      - "lib/platform/**" # This prevents the workflow from running when files in lib/platform/ change
+      - "CDK/lib/platform/**" # This prevents the workflow from running when files in lib/platform/ change
+      - ".github/workflows/platform.yml" # Ignore changes to the platform.yml workflow file
   workflow_dispatch: # Manual trigger
 
 jobs:
