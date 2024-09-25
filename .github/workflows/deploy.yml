@@ -140,8 +140,9 @@ jobs:
       - name: Deploy ECS Stack
         run: |
           cd CDK
-          npx cdk deploy EcsStack --require-approval never  # Specify the ECS stack explicitly
-          # Deploy the ECS stack, which will use the Docker image in the ECR repository
+          npx cdk deploy EcsStack --require-approval never \ 
+          --context accountId=${{ secrets.AWS_ACCOUNT_ID }} \
+          --context region=${{ secrets.AWS_REGION }}
 
       - name: Deploy IoT Stack
         run: |
