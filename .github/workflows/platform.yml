@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - "CDK/lib/platform/**" # This triggers the workflow only when files in lib/platform/ change
+  workflow_dispatch: # Manual trigger
 
 jobs:
   deploy:
