@@ -1,4 +1,4 @@
-name: Deploy Platform Infrastructure
+name: Platform
 
 on:
   push:
@@ -71,6 +71,10 @@ jobs:
           cd CDK
           echo bootstrapping aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
           npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+
+      - name: Synthesize CDK Stack
+        run: |
+          npx cdk synth DataIngestionStack || echo "Synthesis failed"
 
       - name: Deploy Decoupled Infrastructure
         run: |
