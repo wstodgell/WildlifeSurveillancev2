@@ -18,7 +18,7 @@ export class EcsStack extends cdk.Stack {
     const region = process.env.AWS_REGION;
 
     // Example of using these values in IAM Policy for Secrets Manager
-    const secretArn = `arn:aws:secretsmanager:${region}:${accountId}:secret:IoT/TestThing/certs`;
+    const logArn = `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/docker/transmitter:*`;
 
 
     // Import the ECR repository URIs created in the EcrStack - required for containers to get the images
@@ -107,6 +107,11 @@ export class EcsStack extends cdk.Stack {
 
     //const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
 
+
+
+    // Later created in iot-stack in format of secretName: `IoT/${thingName}/certs`,  
+    const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GPSThingSecret', 'IoT/TestThing/certs');
+
     //This role is created so that TEST TRansmitter can read secrets, create/write to logs and also connect to IoT
     const explicitTestTaskRole = new iam.Role(this, 'ExplicitTestTaskRole', {
       roleName: 'ExplicitTestTaskRole',  // Assign a clear, meaningful name
@@ -123,14 +128,8 @@ export class EcsStack extends cdk.Stack {
       resources: ["*"],  // You can narrow this down to specific IoT resources if necessary
     }));
     
-    // Grant permissions for Secrets Manager
-    explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
-      actions: [
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret"
-      ],
-      resources: [secretArn],
-    }));
+    // Grant the ECS task permission to retrieve the secret value
+    iotTestThingSecret.grantRead(explicitTestTaskRole);
     
     // Grant permissions for CloudWatch Logs
     explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
@@ -139,7 +138,7 @@ export class EcsStack extends cdk.Stack {
         "logs:CreateLogStream",
         "logs:PutLogEvents"
       ],
-      resources: [secretArn],
+      resources: [logArn],
     }));
     
 
