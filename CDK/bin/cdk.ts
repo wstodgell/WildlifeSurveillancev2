@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { EcrStack } from '../lib/ecr-stack';
-import { EcsStack } from '../lib/ecs-stack';
-import { IotCodeStack } from '../lib/iot-stack';
+import { EcrStack } from '../lib/iot/ecr-stack';
+import { EcsStack } from '../lib/iot/ecs-stack';
+import { IotCodeStack } from '../lib/iot/iot-stack';
 
 const app = new cdk.App();
 
