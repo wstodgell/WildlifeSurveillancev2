@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "lib/platform/**" # This triggers the workflow only when files in lib/platform/ change
+      - "CDK/lib/platform/**" # This triggers the workflow only when files in lib/platform/ change
 
 jobs:
   deploy:
