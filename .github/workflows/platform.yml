@@ -74,9 +74,10 @@ jobs:
 
       - name: Synthesize CDK Stack
         run: |
+          cd CDK
           npx cdk synth DataIngestionStack || echo "Synthesis failed"
 
-      - name: Deploy Decoupled Infrastructure
+      - name: Deply Data Ingestion Stack
         run: |
           cd CDK
           npx cdk deploy DataIngestionStack --require-approval never
