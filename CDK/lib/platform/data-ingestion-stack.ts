@@ -40,7 +40,7 @@ export class DataIngestionStack extends cdk.Stack {
     // Create Lambda function for processing GPS data
     const gpsTopicProcessorLambda = new lambda.Function(this, 'GpsTopicProcessorLambda', {
       functionName: 'GPSTopicProcessor',
-      code: lambda.Code.fromAsset('CDK/lib/lambda'), // Path to your Lambda code directory
+      code: lambda.Code.fromAsset('lib/lambda'), // Path to your Lambda code directory
       handler: 'GPSTopicProcessor.lambda_handler', // Assuming your Python file is named GPSTopicProcessor.py with a lambda_handler
       runtime: lambda.Runtime.PYTHON_3_12,
       role: lambdaDynamoDBAccessRole,
