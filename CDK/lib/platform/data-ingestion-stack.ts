@@ -68,8 +68,14 @@ export class DataIngestionStack extends cdk.Stack {
       },
     });
 
+    // EXPLICIT: Add Deletion Policy for the IoT Rule
+    gpsIotRule.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+
     // Grant IoT Core permissions to invoke the Lambda function
     gpsTopicProcessorLambda.grantInvoke(new iam.ServicePrincipal('iot.amazonaws.com'));
+
+    // EXPLICIT: Make sure the Lambda function is destroyed
+    gpsTopicProcessorLambda.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     // Output the bucket name to the console
     new cdk.CfnOutput(this, 'BucketNameOutput', {
