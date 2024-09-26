@@ -18,4 +18,4 @@ RUN ls -la /app && cat /app/Mock_GPSCollar_AWS.py
 CMD ["sleep", "infinity"]
 
 # Define the entrypoint: Run Mock_GPSCollar_AWS.py when the container starts
-#CMD ["python", "Mock_GPSCollar_AWS.py"]
+CMD ["python", "GPS_Transmitter.py"]

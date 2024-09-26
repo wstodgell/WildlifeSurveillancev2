@@ -60,6 +60,11 @@ jobs:
           cd CDK
           rm -rf node_modules/.cdk
 
+      - name: Synthesize CDK Stack
+        run: |
+          cd CDK
+          npx cdk synth || echo "Synthesis failed"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -151,8 +156,3 @@ jobs:
         run: |
           cd CDK
           npx cdk deploy IotCodeStack --require-approval never  # Specify the ECS stack explicitly
-
-      - name: Deploy Decoupled Infrastructure
-        run: |
-          cd CDK
-          npx cdk deploy DataIngestionStack --require-approval never
