@@ -78,6 +78,12 @@ jobs:
           echo bootstrapping aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
           npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
 
+        # Deploy the ECR stack first to create the ECR repository
+      - name: Deploy Configuration Stack
+        run: |
+          cd CDK
+          npx cdk deploy ConfigurationStack --require-approval never
+
       # Deploy the ECR stack first to create the ECR repository
       - name: Deploy ECR Stack
         run: |
