@@ -7,7 +7,7 @@ from gps_collar_logic import update_elk_positions
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
-console_testing = False
+console_testing = True
 
 # Function to publish a message to the MQTT topic
 def publish_message(mqtt_client):
@@ -21,6 +21,23 @@ def publish_message(mqtt_client):
         "message": "Hello from GPSThing!",
         "timestamp": time.time()
     }
+
+    if(console_testing):
+      print("testing!")
+      elk_positions = update_elk_positions()
+
+      for elk_id, position in enumerate(elk_positions):
+          lat, lon = position
+
+      # Create a JSON payload to send to AWS IoT Core
+      payload = {
+          "elk_id": elk_id,
+          "latitude": lat,
+          "longitude": lon,
+          "timestamp": time.time()  # Current time as a timestamp
+      }
+      print(payload)
+
 
     if(console_testing):
          # Print the current positions for each elk
@@ -57,7 +74,6 @@ if __name__ == "__main__":
         # Infinite loop to publish messages every 15 seconds
         while True:
             try:
-                print("TRYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
                 publish_message(mqtt_client)  # Publish message
                 time.sleep(15)  # Wait 15 seconds before next message
             except Exception as e:
