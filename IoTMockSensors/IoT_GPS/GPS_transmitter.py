@@ -6,49 +6,43 @@ from setup_mqtt import mqtt_connect, log_to_cloudwatch
 from gps_collar_logic import update_elk_positions
 import configuration
 from colorama import Fore, Style, init
+import traceback
+
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 
-# Function to publish a message to the MQTT topic
-def publish_message(mqtt_client):
-    print(f"{Fore.YELLOW}Attempting to Publish Message{Style.RESET_ALL}")
-    current_positions = update_elk_positions()
-    # Update and get the current positions of all elks
-    
-    # Get the current time
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+def log_error_with_traceback(e):
+  logging.error(f"Exception: {str(e)}")
+  logging.error(traceback.format_exc())
 
-    message = {
-        "message": "Hello from GPSThing!",
-        "timestamp": time.time()
-    }
+def publish_message(mqtt_client):
+  try:
+    print(f"{Fore.YELLOW}Attempting to Publish Message{Style.RESET_ALL}")
 
     elk_positions = update_elk_positions()
+    print(f"DEBUG: elk_positions generated: {elk_positions}")  # Add this debug log
 
-    if(configuration.TESTING):
-      print(f"{Fore.BLUE}testing!{Style.RESET_ALL}")
-      
+    # Create a JSON payload to send to AWS IoT Core
+    payload = configuration.create_topic(elk_positions)
+    print(f"{Fore.GREEN}The payload: {json.dumps(payload, indent=2)}{Style.RESET_ALL}")
 
-      for elk_id, position in enumerate(elk_positions):
-          lat, lon = position
-
-
-
-      # Create a JSON payload to send to AWS IoT Core
-      payload = configuration.create_topic(elk_positions)
-      print(payload)
-
-
-    if(configuration.TESTING):
-         # Print the current positions for each elk
-        for elk_id, (lat, lon) in enumerate(current_positions, start=1):
-            print(f"Elk ID: {elk_id}, Time: {current_time}, Latitude: {lat:.6f}, Longitude: {lon:.6f}")
+    if configuration.TESTING:
+      print(f"{Fore.BLUE}Testing mode: Payload generated but not publishing to AWS IoT Core.{Style.RESET_ALL}")
     else:
-        print(f'publishing topic: {Fore.GREEN}{configuration.GPS_TOPIC_NAME}{Style.RESET_ALL}')
-        mqtt_client.publish(configuration.GPS_TOPIC_NAME, json.dumps(message), 1)
-        logging.info(f"Published: {json.dumps(message)} to {configuration.GPS_TOPIC_NAME}")
-        log_to_cloudwatch(f"Published: {json.dumps(message)} to {configuration.GPS_TOPIC_NAME}")
+      # Ensure the mqtt_client is valid before trying to publish
+      if mqtt_client:
+        print(f'Publishing topic: {Fore.GREEN}{configuration.GPS_TOPIC_NAME}{Style.RESET_ALL}')
+        mqtt_client.publish(configuration.GPS_TOPIC_NAME, json.dumps(payload), 1)
+        logging.info(f"Published: {json.dumps(payload)} to {configuration.GPS_TOPIC_NAME}")
+        log_to_cloudwatch(f"Published: {json.dumps(payload)} to {configuration.GPS_TOPIC_NAME}")
+      else:
+        logging.error(f"MQTT client is None. Cannot publish message.")
+  except Exception as e:
+    log_error_with_traceback(e)
+    raise
+
 
 # Function to attempt preamble setup and connection
 def attempt_preamble_setup():

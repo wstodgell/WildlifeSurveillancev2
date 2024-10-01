@@ -25,9 +25,13 @@ def setup_config():
 
 
 def create_topic(payload):
-    {
-      "messageId": str(uuid.uuid4()),
-      "topic": GPS_TOPIC_NAME,
-      "timestamp": time.time(),
-      "payload": payload
-    }
+  transformed_payload = [
+    {"elk_id": elk_id, "lat": lat, "lon": lon}
+    for elk_id, (lat, lon) in enumerate(payload)
+  ]
+  return {
+    "messageId": str(uuid.uuid4()),
+    "topic": GPS_TOPIC_NAME,
+    "timestamp": time.time(),
+    "payload": transformed_payload
+  }

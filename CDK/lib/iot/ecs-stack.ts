@@ -65,8 +65,26 @@ export class EcsStack extends cdk.Stack {
       description: 'Task role for GPS task with permissions for Secrets Manager',
     });
 
+    // Attach the pre-made AmazonSSMReadOnlyAccess managed policy to the GPS task role
+    gpsTaskRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMReadOnlyAccess"));
+
     // Grant the GPS task role permission to read GPSThing's secret
     iotGPSThingSecret.grantRead(gpsTaskRole);
+
+    // Grant permissions for CloudWatch Logs
+    gpsTaskRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        "logs:CreateLogGroup",      // Permission to create log groups
+        "logs:CreateLogStream",     // Permission to create log streams
+        "logs:PutLogEvents",         // Permission to put log events into log streams
+        "iot:DescribeEndpoint",
+        "iot:Connect",
+        "iot:Publish",
+        "iot:Subscribe",
+        "iot:Receive"
+      ],
+      resources: ["*"], // Restrict to the specific log group
+    }));
 
     // Create a Fargate Task Definition for IoT-GPS
     const GPSTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTGPSTaskDefinition', {
