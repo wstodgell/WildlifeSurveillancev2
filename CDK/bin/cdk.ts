@@ -5,8 +5,15 @@ import { EcrStack } from '../lib/iot/ecr-stack';
 import { EcsStack } from '../lib/iot/ecs-stack';
 import { IotCodeStack } from '../lib/iot/iot-stack';
 import { DataIngestionStack } from '../lib/platform/data-ingestion-stack';
+import { ConfigurationStack } from '../lib/configuration-stack';
 
 const app = new cdk.App();
+
+
+// *** PLATFORM
+new ConfigurationStack(app, 'ConfigurationStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
 
 // Instantiate the EcrStack
 new EcrStack(app, 'EcrStack', {

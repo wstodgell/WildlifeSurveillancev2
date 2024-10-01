@@ -13,7 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Debugging: List files in /app to verify everything is copied
 RUN ls -la /app && cat /app/transmitter.py
 
-
 # Keep the container running without running the script yet - this is so ECS service doesn't fail over and over
 # CMD ["sleep", "infinity"]
 # Define the entrypoint: Run Mock_GPSCollar_AWS.py when the container starts

@@ -11,12 +11,6 @@ import os
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# AWS IoT Core Client ID and MQTT Topic
-CLIENT_ID = "TestTransmitter"
-TOPIC = "test/transmit"
-LOG_GROUP = "/docker/transmitter"
-LOG_STREAM = "mqtt_connect"
-
 # Initialize CloudWatch Logs client
 logs_client = boto3.client('logs', region_name='us-east-1')
 
@@ -24,14 +18,14 @@ logs_client = boto3.client('logs', region_name='us-east-1')
 def log_to_cloudwatch(message):
     try:
         # Ensure the log group exists
-        logs_client.create_log_group(logGroupName=LOG_GROUP)
+        logs_client.create_log_group(logGroupName=configuration.LOG_GROUP)
     except logs_client.exceptions.ResourceAlreadyExistsException:
         # Log group already exists, continue
         pass
 
     try:
         # Ensure the log stream exists
-        logs_client.create_log_stream(logGroupName=LOG_GROUP, logStreamName=LOG_STREAM)
+        logs_client.create_log_stream(logGroupName=configuration.LOG_GROUP, logStreamName=configuration.LOG_STREAM)
     except logs_client.exceptions.ResourceAlreadyExistsException:
         # Log stream already exists, continue
         pass
@@ -97,7 +91,7 @@ def get_iot_endpoint():
 
 # Function to retrieve IoT certificates from AWS Secrets Manager
 def get_secret():
-    secret_name = "IoT/TestThing/certs"
+    secret_name = "IoT/TestThing/certs" #not best practice, you shouldn't hardcore secret names
     region_name = "us-east-1"
 
     try:

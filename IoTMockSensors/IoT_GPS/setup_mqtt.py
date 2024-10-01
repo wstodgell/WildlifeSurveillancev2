@@ -7,15 +7,11 @@ from botocore.exceptions import ClientError
 import requests
 import tempfile
 import os
+import configuration
+from colorama import Fore, Style, init
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
-
-# AWS IoT Core Client ID and MQTT Topic
-CLIENT_ID = "GPSCollar"
-TOPIC = "IoT/GPS"
-LOG_GROUP = "/docker/GPS"
-LOG_STREAM = "mqtt_connect"
 
 # Initialize CloudWatch Logs client
 logs_client = boto3.client('logs', region_name='us-east-1')
@@ -24,29 +20,29 @@ logs_client = boto3.client('logs', region_name='us-east-1')
 def log_to_cloudwatch(message):
     try:
         # Ensure the log group exists
-        logs_client.create_log_group(logGroupName=LOG_GROUP)
+        logs_client.create_log_group(logGroupName=configuration.LOG_GROUP)
     except logs_client.exceptions.ResourceAlreadyExistsException:
         # Log group already exists, continue
         pass
 
     try:
         # Ensure the log stream exists
-        logs_client.create_log_stream(logGroupName=LOG_GROUP, logStreamName=LOG_STREAM)
+        logs_client.create_log_stream(logGroupName=configuration.LOG_GROUP, logStreamName=configuration.LOG_STREAM)
     except logs_client.exceptions.ResourceAlreadyExistsException:
         # Log stream already exists, continue
         pass
 
     try:
         # Get the sequence token for the log stream (if exists)
-        response = logs_client.describe_log_streams(logGroupName=LOG_GROUP, logStreamNamePrefix=LOG_STREAM)
+        response = logs_client.describe_log_streams(logGroupName=configuration.LOG_GROUP, logStreamNamePrefix=configuration.LOG_STREAM)
         log_streams = response['logStreams']
         sequence_token = log_streams[0].get('uploadSequenceToken') if log_streams else None
 
         # Put log event with the correct sequence token (if required)
         if sequence_token:
             logs_client.put_log_events(
-                logGroupName=LOG_GROUP,
-                logStreamName=LOG_STREAM,
+                logGroupName=configuration.LOG_GROUP,
+                logStreamName=configuration.LOG_STREAM,
                 logEvents=[
                     {
                         'timestamp': int(time.time() * 1000),
@@ -58,8 +54,8 @@ def log_to_cloudwatch(message):
         else:
             # No sequence token needed for the first log
             logs_client.put_log_events(
-                logGroupName=LOG_GROUP,
-                logStreamName=LOG_STREAM,
+                logGroupName=configuration.LOG_GROUP,
+                logStreamName=configuration.LOG_STREAM,
                 logEvents=[
                     {
                         'timestamp': int(time.time() * 1000),
@@ -97,7 +93,7 @@ def get_iot_endpoint():
 
 # Function to retrieve IoT certificates from AWS Secrets Manager
 def get_secret():
-    secret_name = "IoT/GPSThing/certs" #not best practice, you shouldn't hardcore secret names
+    secret_name = configuration.CERT_SECRET_NAME #not best practice, you shouldn't hardcore secret names
     region_name = "us-east-1"
 
     try:
@@ -146,7 +142,7 @@ def mqtt_connect():
         iot_endpoint = get_iot_endpoint()
 
         # Initialize MQTT Client
-        mqtt_client = AWSIoTMQTTClient(CLIENT_ID)
+        mqtt_client = AWSIoTMQTTClient(configuration.CLIENT_ID)
         mqtt_client.configureEndpoint(iot_endpoint, 8883)
         mqtt_client.configureCredentials(root_ca, key_file, cert_file)
 

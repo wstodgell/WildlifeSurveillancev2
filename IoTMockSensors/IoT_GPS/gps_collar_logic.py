@@ -35,5 +35,5 @@ def update_elk_positions():
 
         # Update elk's position
         elk_positions[i] = [lat, lon]
-    
+    print(f"elk_positions {elk_positions}")
     return elk_positions
