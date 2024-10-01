@@ -1,5 +1,7 @@
 import boto3
 from colorama import Fore, Style, init
+import time
+import uuid
 
 CLIENT_ID = "GPSCollar"
 GPS_TOPIC_NAME = None
@@ -20,3 +22,12 @@ def setup_config():
     # Extract the value
     GPS_TOPIC_NAME = response['Parameter']['Value']
     print(f"{Fore.RED}*******************Retrieved {GPS_TOPIC_NAME}{Style.RESET_ALL}")
+
+
+def create_topic(payload):
+    {
+      "messageId": str(uuid.uuid4()),
+      "topic": GPS_TOPIC_NAME,
+      "timestamp": time.time(),
+      "payload": payload
+    }

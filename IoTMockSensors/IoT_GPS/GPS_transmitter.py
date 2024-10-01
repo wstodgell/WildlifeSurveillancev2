@@ -24,20 +24,19 @@ def publish_message(mqtt_client):
         "timestamp": time.time()
     }
 
+    elk_positions = update_elk_positions()
+
     if(configuration.TESTING):
       print(f"{Fore.BLUE}testing!{Style.RESET_ALL}")
-      elk_positions = update_elk_positions()
+      
 
       for elk_id, position in enumerate(elk_positions):
           lat, lon = position
 
+
+
       # Create a JSON payload to send to AWS IoT Core
-      payload = {
-          "elk_id": elk_id,
-          "latitude": lat,
-          "longitude": lon,
-          "timestamp": time.time()  # Current time as a timestamp
-      }
+      payload = configuration.create_topic(elk_positions)
       print(payload)
 
 
