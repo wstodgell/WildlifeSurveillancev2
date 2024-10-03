@@ -133,10 +133,11 @@ export class DataIngestionStack extends cdk.Stack {
     // Apply the condition to the database creation so it only creates the database if it doesn't already exist
     glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
 
-    // Step 3: Create Glue Crawler
+    // Step 3: Create Glue Crawler 
+    // TODO: 
     const glueCrawler = new CfnCrawler(this, 'DynamoDBGPSCrawler', {
       role: glueRole.roleArn,  // Attach the IAM Role to the crawler
-      databaseName: glueDatabase.ref,  // Target Glue Database
+      databaseName: 'gps_data_catalog',  // Target Glue Database
       name: 'DynamoDBgps',
       targets: {
         dynamoDbTargets: [
