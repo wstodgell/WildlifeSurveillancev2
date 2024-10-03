@@ -7,7 +7,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { CfnCrawler, CfnDatabase } from 'aws-cdk-lib/aws-glue';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
-import { CfnCondition, CfnParameter } from 'aws-cdk-lib';
+import { CfnParameter, CfnCondition, Fn } from 'aws-cdk-lib';
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,22 +17,14 @@ export class DataIngestionStack extends cdk.Stack {
     // Create a unique S3 bucket name using the stack name and account ID
     const uniqueBucketName = `gps-dynamodb-glue-data-${this.account}-${this.stackName}`;
 
-    // Create the S3 bucket with the unique name
     const s3Bucket = new s3.Bucket(this, 'UniqueGPSDataBucket', {
-      bucketName: uniqueBucketName.toLowerCase(),  // Ensure bucket name is lowercase
-      removalPolicy: cdk.RemovalPolicy.DESTROY,        // Bucket will be deleted with the stack
+      bucketName: uniqueBucketName.toLowerCase(),  // S3 bucket names must be lowercase
+      removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
     });
 
-    // Output the bucket name to the console
+    // Output the bucket name
     new cdk.CfnOutput(this, 'BucketNameOutput', {
       value: s3Bucket.bucketName,
-    });
-
-    // Create the most basic S3 bucket (example from your original stack) this is for testing
-    // TODO: remove this - for testing only
-    const bucket = new s3.Bucket(this, 'BasicS3Bucket', {
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Ensures the bucket is deleted when the stack is destroyed
-      autoDeleteObjects: true,  // Automatically delete objects when the bucket is deleted
     });
 
     //Create Roles
@@ -97,22 +89,20 @@ export class DataIngestionStack extends cdk.Stack {
     gpsTopicProcessorLambda.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     // ***************** create glue crawlers for Dynamodb
+    // Step 1: Create IAM Role for AWS Glue
 
-    // Create a parameter to check if the Glue Database already exists - passed in from github actions
     const glueDatabaseExistsParam = new CfnParameter(this, 'GlueDatabaseExists', {
       type: 'String',
       allowedValues: ['true', 'false'],
       default: 'false',
     });
 
-    // Create a condition based on the Glue Database existence
+    // Condition based on the Glue Database existence
     const glueDatabaseExistsCondition = new CfnCondition(this, 'GlueDatabaseExistsCondition', {
-      expression: cdk.Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
+      expression: Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
     });
 
 
-
-    //Create IAM Role for AWS Glue
     const glueRole = new Role(this, 'GlueDynamoDBRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
     });
@@ -130,14 +120,17 @@ export class DataIngestionStack extends cdk.Stack {
       },
     });
 
-    // Apply the condition to the database creation so it only creates the database if it doesn't already exist
-    glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
+     // Apply condition so the Glue Database is only created if it doesn't already exist
+     glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
 
-    // Step 3: Create Glue Crawler 
-    // TODO: 
+    // Step 8: Create Glue Crawler with conditional reference to the Glue Database
     const glueCrawler = new CfnCrawler(this, 'DynamoDBGPSCrawler', {
-      role: glueRole.roleArn,  // Attach the IAM Role to the crawler
-      databaseName: 'gps_data_catalog',  // Target Glue Database
+      role: glueRole.roleArn,  // Attach IAM Role to Glue Crawler
+      databaseName: Fn.conditionIf(
+        'GlueDatabaseExistsCondition',
+        glueDatabase.ref,        // Reference the newly created database (if GlueDatabaseExists = false)
+        'gps_data_catalog'       // Reference the existing database (if GlueDatabaseExists = true)
+      ).toString(),
       name: 'DynamoDBgps',
       targets: {
         dynamoDbTargets: [
@@ -147,9 +140,9 @@ export class DataIngestionStack extends cdk.Stack {
         ],
       },
       schedule: {
-        scheduleExpression: 'cron(0 12 * * ? *)',  // Optional: Crawler schedule, adjust if needed
+        scheduleExpression: 'cron(0 12 * * ? *)',  // Optional Crawler schedule (daily at noon)
       },
-      tablePrefix: 'gps_',  // Optional: Prefix for tables created by the Crawler
+      tablePrefix: 'gps_',  // Prefix for tables created by the Crawler
     });
 
   }
