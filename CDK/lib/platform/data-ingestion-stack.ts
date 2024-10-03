@@ -7,6 +7,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { CfnCrawler, CfnDatabase } from 'aws-cdk-lib/aws-glue';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { CfnCondition, CfnParameter } from 'aws-cdk-lib';
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -96,7 +97,22 @@ export class DataIngestionStack extends cdk.Stack {
     gpsTopicProcessorLambda.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     // ***************** create glue crawlers for Dynamodb
-    // Step 1: Create IAM Role for AWS Glue
+
+    // Create a parameter to check if the Glue Database already exists - passed in from github actions
+    const glueDatabaseExistsParam = new CfnParameter(this, 'GlueDatabaseExists', {
+      type: 'String',
+      allowedValues: ['true', 'false'],
+      default: 'false',
+    });
+
+    // Create a condition based on the Glue Database existence
+    const glueDatabaseExistsCondition = new CfnCondition(this, 'GlueDatabaseExistsCondition', {
+      expression: cdk.Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
+    });
+
+
+
+    //Create IAM Role for AWS Glue
     const glueRole = new Role(this, 'GlueDynamoDBRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
     });
@@ -113,6 +129,9 @@ export class DataIngestionStack extends cdk.Stack {
         name: 'gps_data_catalog',  // Database name in Glue Data Catalog
       },
     });
+
+    // Apply the condition to the database creation so it only creates the database if it doesn't already exist
+    glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
 
     // Step 3: Create Glue Crawler
     const glueCrawler = new CfnCrawler(this, 'DynamoDBGPSCrawler', {

@@ -80,4 +80,4 @@ jobs:
       - name: Deply Data Ingestion Stack
         run: |
           cd CDK
-          npx cdk deploy DataIngestionStack --require-approval never
+          npx cdk deploy DataIngestionStack --require-approval never --parameters GlueDatabaseExists=true
