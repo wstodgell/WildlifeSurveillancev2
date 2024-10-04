@@ -26,11 +26,6 @@ export class DataIngestionStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
     });
 
-    // Output the bucket name
-    new cdk.CfnOutput(this, 'athenaResultsBucketNameOutput', {
-      value: athenaResultsBucket.bucketName,
-    });
-
     // Athena Workgroup - assign athenaResultsBucket bucket to store reuslts.
     const athenaWorkgroup = new athena.CfnWorkGroup(this, 'MyAthenaWorkgroup', {
       name: 'MyWorkgroup',
@@ -52,11 +47,6 @@ export class DataIngestionStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
     });
 
-    // Output the bucket name
-    new cdk.CfnOutput(this, 'DynamoDbBucketName', {
-      value: s3BucketDynamoDb.bucketName,
-    });
-
     //************ Create bucket for ETL scripts for Glue JObs */
     // Create a unique S3 bucket name for storing Glue ETL scripts
     const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`;
@@ -65,10 +55,22 @@ export class DataIngestionStack extends cdk.Stack {
     const etlScriptBucket = new s3.Bucket(this, 'ETLScriptBucket', {
       bucketName: etlScriptBucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,  // Bucket will be deleted with the stack
+      autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
+    });
+
+
+    // Output the athenaResultsBucketName
+    new cdk.CfnOutput(this, 'AthenaResultsBucketName', {
+      value: athenaResultsBucket.bucketName,
+    });
+
+    // Output the DynamoDbBucketName Parquet files are put here from Glue Job
+    new cdk.CfnOutput(this, 'DynamoDbBucketName', {
+      value: s3BucketDynamoDb.bucketName,
     });
 
     // Output the bucket name
-    new cdk.CfnOutput(this, 'ETLScriptBucketNameOutput', {
+    new cdk.CfnOutput(this, 'ETLScriptBucketName', {
       value: etlScriptBucket.bucketName,
     });
 
