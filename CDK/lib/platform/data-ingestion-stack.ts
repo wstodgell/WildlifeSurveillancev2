@@ -58,10 +58,10 @@ export class DataIngestionStack extends cdk.Stack {
 
     // ********* athena GPS dynamoDB Bucket data
     //Glue job outputs data filese into from DynamoDB to S3 bucket
-    const dynamoDbS3ResultsBucketName = `dyanmoToS3-${this.account}-${this.stackName}`;
+    const dynamoDbS3ResultsBucketName = `dynamo-to-s3-${this.account}-${this.stackName}`;
 
     //Glue job outputs data filese into from DynamoDB to S3 bucket
-    const s3BucketDynamoDb = new s3.Bucket(this, 'dyanmoToS3', {
+    const s3BucketDynamoDb = new s3.Bucket(this, 'dynamo-to-s3', {
       bucketName: dynamoDbS3ResultsBucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
       autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
