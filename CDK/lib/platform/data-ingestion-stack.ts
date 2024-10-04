@@ -10,6 +10,7 @@ import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { CfnParameter, CfnCondition, Fn } from 'aws-cdk-lib';
 import * as athena from 'aws-cdk-lib/aws-athena';
 import * as glue from 'aws-cdk-lib/aws-glue';
+import * as s3Deployment from 'aws-cdk-lib/aws-s3-deployment'; // Import S3 Deployment
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -69,6 +70,13 @@ export class DataIngestionStack extends cdk.Stack {
     // Output the bucket name
     new cdk.CfnOutput(this, 'ETLScriptBucketNameOutput', {
       value: etlScriptBucket.bucketName,
+    });
+
+    // Put the etl script into the bucket.
+    new s3Deployment.BucketDeployment(this, 'DeployETLScripts', {
+      destinationBucket: etlScriptBucket,
+      sources: [s3Deployment.Source.asset('./lib/scripts')],  // Path to local folder containing etl_GPStoDb.py
+      destinationKeyPrefix: 'scripts/',  // Place scripts in the "scripts/" folder in S3
     });
 
     //Create Roles
@@ -195,7 +203,7 @@ export class DataIngestionStack extends cdk.Stack {
       role: glueRole.roleArn,
       command: {
         name: 'glueetl',  // Specifies it's an ETL job
-        scriptLocation: `s3://${etlScriptBucket.bucketName}/scripts/etl_script.py`,  // Path to the script in the new ETL script bucket
+        scriptLocation: `s3://${etlScriptBucket.bucketName}/scripts/etl_GPStoDB.py`,  // Path to the script in the new ETL script bucket
         pythonVersion: '3',  // Python 3 for the Glue job
       },
       defaultArguments: {
@@ -203,6 +211,7 @@ export class DataIngestionStack extends cdk.Stack {
         '--TempDir': `s3://${athenaResultsBucket.bucketName}/tmp/`,  // Temporary directory in Athena results bucket
         '--enable-metrics': '',  // Enables metrics tracking
         '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
+        '--s3_output_path': `s3://${s3BucketDynamoDb.bucketName}/gps_data/`,  // Pass the S3 bucket path to your Glue job
       },
       maxRetries: 3,  // Retry the job 3 times if it fails
       glueVersion: '3.0',  // Glue version
