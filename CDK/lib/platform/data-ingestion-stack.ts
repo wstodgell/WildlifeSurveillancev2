@@ -26,7 +26,7 @@ export class DataIngestionStack extends cdk.Stack {
     });
 
     // Output the bucket name
-    new cdk.CfnOutput(this, 'BucketNameOutput', {
+    new cdk.CfnOutput(this, 'athenaResultsBucketNameOutput', {
       value: athenaResultsBucket.bucketName,
     });
 
@@ -52,7 +52,7 @@ export class DataIngestionStack extends cdk.Stack {
     });
 
     // Output the bucket name
-    new cdk.CfnOutput(this, 'BucketNameOutput', {
+    new cdk.CfnOutput(this, 'DynamoDbBucketName', {
       value: s3BucketDynamoDb.bucketName,
     });
 
