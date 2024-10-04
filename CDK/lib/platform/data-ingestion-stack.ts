@@ -17,10 +17,10 @@ export class DataIngestionStack extends cdk.Stack {
 
     // ********* athena results bucket
     // Create a unique S3 bucket name for the bucket that stores athena results
-    const athenaResultsS3BucketName = `dyanmoDbS3Results-${this.account}-${this.stackName}`;
+    const athenaResultsS3BucketName = `athenaResults-${this.account}-${this.stackName}`;
 
     //Create a bucket to store Athena Reults
-    const athenaResultsBucket = new s3.Bucket(this, 'UniqueGPSDataBucket', {
+    const athenaResultsBucket = new s3.Bucket(this, 'athenaResults', {
       bucketName: athenaResultsS3BucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
     });
@@ -42,11 +42,11 @@ export class DataIngestionStack extends cdk.Stack {
     });
 
     // ********* athena GPS dynamoDB Bucket data
-    // Create a unique S3 bucket name using the stack name and account ID
-    const dynamoDbS3ResultsBucketName = `dyanmoDbS3Results-${this.account}-${this.stackName}`;
+    //Glue job outputs data filese into from DynamoDB to S3 bucket
+    const dynamoDbS3ResultsBucketName = `dyanmoToS3-${this.account}-${this.stackName}`;
 
     //Glue job outputs data filese into from DynamoDB to S3 bucket
-    const s3BucketDynamoDb = new s3.Bucket(this, 'UniqueGPSDataBucket', {
+    const s3BucketDynamoDb = new s3.Bucket(this, 'dyanmoToS3', {
       bucketName: dynamoDbS3ResultsBucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
     });
