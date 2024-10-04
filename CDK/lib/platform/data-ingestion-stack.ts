@@ -16,6 +16,14 @@ export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Create a dedicated temporary S3 bucket for Glue job
+    const glueTempS3BucketName = `glue-temp-${this.account}-${this.stackName}`;
+
+    const glueTempBucket = new s3.Bucket(this, 'GlueTempBucket', {
+      bucketName: glueTempS3BucketName.toLowerCase(),
+      removalPolicy: cdk.RemovalPolicy.DESTROY,  // Automatically delete the bucket with the stack
+    });
+
     // ********* athena results bucket
     // Create a unique S3 bucket name for the bucket that stores athena results
     const athenaResultsS3BucketName = `athenaResults-${this.account}-${this.stackName}`;
@@ -60,18 +68,23 @@ export class DataIngestionStack extends cdk.Stack {
 
 
     // Output the athenaResultsBucketName
-    new cdk.CfnOutput(this, 'AthenaResultsBucketName', {
+    new cdk.CfnOutput(this, 'AthenaResultsBucketNameOutput', {
       value: athenaResultsBucket.bucketName,
     });
 
     // Output the DynamoDbBucketName Parquet files are put here from Glue Job
-    new cdk.CfnOutput(this, 'DynamoDbBucketName', {
+    new cdk.CfnOutput(this, 'DynamoDbBucketNameOutput', {
       value: s3BucketDynamoDb.bucketName,
     });
 
     // Output the bucket name
-    new cdk.CfnOutput(this, 'ETLScriptBucketName', {
+    new cdk.CfnOutput(this, 'ETLScriptBucketNameOutput', {
       value: etlScriptBucket.bucketName,
+    });
+
+    // Output the bucket name for verification
+    new cdk.CfnOutput(this, 'GlueTempBucketNameOutput', {
+      value: glueTempBucket.bucketName,
     });
 
     // Put the etl script into the bucket.
@@ -210,7 +223,7 @@ export class DataIngestionStack extends cdk.Stack {
       },
       defaultArguments: {
         '--job-language': 'python',  // The Glue job will run in Python
-        '--TempDir': `s3://${athenaResultsBucket.bucketName}/tmp/`,  // Temporary directory in Athena results bucket
+        '--TempDir': `s3://${glueTempBucket.bucketName}/tmp/`,  // Correct temporary directory
         '--enable-metrics': '',  // Enables metrics tracking
         '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
         '--s3_output_path': `s3://${s3BucketDynamoDb.bucketName}/gps_data/`,  // Pass the S3 bucket path to your Glue job
