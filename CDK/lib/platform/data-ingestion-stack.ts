@@ -8,23 +8,67 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { CfnCrawler, CfnDatabase } from 'aws-cdk-lib/aws-glue';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { CfnParameter, CfnCondition, Fn } from 'aws-cdk-lib';
+import * as athena from 'aws-cdk-lib/aws-athena';
+import * as glue from 'aws-cdk-lib/aws-glue';
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // ********* athena results bucket
+    // Create a unique S3 bucket name for the bucket that stores athena results
+    const athenaResultsS3BucketName = `dyanmoDbS3Results-${this.account}-${this.stackName}`;
 
-    // Create a unique S3 bucket name using the stack name and account ID
-    const uniqueBucketName = `gps-dynamodb-glue-data-${this.account}-${this.stackName}`;
-
-    const s3Bucket = new s3.Bucket(this, 'UniqueGPSDataBucket', {
-      bucketName: uniqueBucketName.toLowerCase(),  // S3 bucket names must be lowercase
+    //Create a bucket to store Athena Reults
+    const athenaResultsBucket = new s3.Bucket(this, 'UniqueGPSDataBucket', {
+      bucketName: athenaResultsS3BucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
     });
 
     // Output the bucket name
     new cdk.CfnOutput(this, 'BucketNameOutput', {
-      value: s3Bucket.bucketName,
+      value: athenaResultsBucket.bucketName,
+    });
+
+    // Athena Workgroup - assign athenaResultsBucket bucket to store reuslts.
+    const athenaWorkgroup = new athena.CfnWorkGroup(this, 'MyAthenaWorkgroup', {
+      name: 'MyWorkgroup',
+      state: 'ENABLED',
+      workGroupConfiguration: {
+        resultConfiguration: {
+          outputLocation: `s3://${athenaResultsBucket.bucketName}/`,
+        },
+      },
+    });
+
+    // ********* athena GPS dynamoDB Bucket data
+    // Create a unique S3 bucket name using the stack name and account ID
+    const dynamoDbS3ResultsBucketName = `dyanmoDbS3Results-${this.account}-${this.stackName}`;
+
+    //Glue job outputs data filese into from DynamoDB to S3 bucket
+    const s3BucketDynamoDb = new s3.Bucket(this, 'UniqueGPSDataBucket', {
+      bucketName: dynamoDbS3ResultsBucketName.toLowerCase(),  // S3 bucket names must be lowercase
+      removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
+    });
+
+    // Output the bucket name
+    new cdk.CfnOutput(this, 'BucketNameOutput', {
+      value: s3BucketDynamoDb.bucketName,
+    });
+
+    //************ Create bucket for ETL scripts for Glue JObs */
+    // Create a unique S3 bucket name for storing Glue ETL scripts
+    const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`;
+
+    // Create a bucket to store Glue ETL scripts
+    const etlScriptBucket = new s3.Bucket(this, 'ETLScriptBucket', {
+      bucketName: etlScriptBucketName.toLowerCase(),  // S3 bucket names must be lowercase
+      removalPolicy: cdk.RemovalPolicy.DESTROY,  // Bucket will be deleted with the stack
+    });
+
+    // Output the bucket name
+    new cdk.CfnOutput(this, 'ETLScriptBucketNameOutput', {
+      value: etlScriptBucket.bucketName,
     });
 
     //Create Roles
@@ -143,6 +187,33 @@ export class DataIngestionStack extends cdk.Stack {
         scheduleExpression: 'cron(0 12 * * ? *)',  // Optional Crawler schedule (daily at noon)
       },
       tablePrefix: 'gps_',  // Prefix for tables created by the Crawler
+    });
+
+    //// CREATE the blueJob
+    // Now use this bucket in your Glue job creation:
+    const glueJob = new glue.CfnJob(this, 'DynamoDBToS3GlueJob', {
+      role: glueRole.roleArn,
+      command: {
+        name: 'glueetl',  // Specifies it's an ETL job
+        scriptLocation: `s3://${etlScriptBucket.bucketName}/scripts/etl_script.py`,  // Path to the script in the new ETL script bucket
+        pythonVersion: '3',  // Python 3 for the Glue job
+      },
+      defaultArguments: {
+        '--job-language': 'python',  // The Glue job will run in Python
+        '--TempDir': `s3://${athenaResultsBucket.bucketName}/tmp/`,  // Temporary directory in Athena results bucket
+        '--enable-metrics': '',  // Enables metrics tracking
+        '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
+      },
+      maxRetries: 3,  // Retry the job 3 times if it fails
+      glueVersion: '3.0',  // Glue version
+      numberOfWorkers: 2,  // Number of workers (adjust if needed)
+      workerType: 'G.1X',  // Worker type
+      timeout: 20,  // Job timeout in minutes
+    });
+
+    // Output the Glue Job Name
+    new cdk.CfnOutput(this, 'GlueJobNameOutput', {
+      value: glueJob.ref,
     });
 
   }
