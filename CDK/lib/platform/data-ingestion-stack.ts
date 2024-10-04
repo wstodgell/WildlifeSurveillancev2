@@ -22,7 +22,17 @@ export class DataIngestionStack extends cdk.Stack {
     const glueTempBucket = new s3.Bucket(this, 'GlueTempBucket', {
       bucketName: glueTempS3BucketName.toLowerCase(),
       removalPolicy: cdk.RemovalPolicy.DESTROY,  // Automatically delete the bucket with the stack
+      autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
     });
+
+    // Deploy an empty file to the /tmp/ folder to simulate its existence
+    new s3Deployment.BucketDeployment(this, 'DeployEmptyFileToTmp', {
+      destinationBucket: glueTempBucket,
+      destinationKeyPrefix: 'tmp/', // This ensures the file goes into the /tmp/ "folder"
+      sources: [s3Deployment.Source.data('empty-file.txt', '')], // Deploy an empty file
+    });
+
+
 
     // ********* athena results bucket
     // Create a unique S3 bucket name for the bucket that stores athena results
@@ -53,6 +63,14 @@ export class DataIngestionStack extends cdk.Stack {
     const s3BucketDynamoDb = new s3.Bucket(this, 'dyanmoToS3', {
       bucketName: dynamoDbS3ResultsBucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
+      autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
+    });
+
+    // Deploy an empty file to the /tmp/ folder to simulate its existence
+    new s3Deployment.BucketDeployment(this, 'DeployEmptyGpsData', {
+      destinationBucket: glueTempBucket,
+      destinationKeyPrefix: 'gps_data/', // This ensures the file goes into the /tmp/ "folder"
+      sources: [s3Deployment.Source.data('empty-file.txt', '')], // Deploy an empty file
     });
 
     //************ Create bucket for ETL scripts for Glue JObs */
@@ -64,6 +82,13 @@ export class DataIngestionStack extends cdk.Stack {
       bucketName: etlScriptBucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,  // Bucket will be deleted with the stack
       autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
+    });
+
+    // Put the etl script into the bucket.
+    new s3Deployment.BucketDeployment(this, 'DeployETLScripts', {
+      destinationBucket: etlScriptBucket,
+      sources: [s3Deployment.Source.asset('./lib/scripts')],  // Path to local folder containing etl_GPStoDb.py
+      destinationKeyPrefix: 'scripts/',  // Place scripts in the "scripts/" folder in S3
     });
 
 
@@ -85,13 +110,6 @@ export class DataIngestionStack extends cdk.Stack {
     // Output the bucket name for verification
     new cdk.CfnOutput(this, 'GlueTempBucketNameOutput', {
       value: glueTempBucket.bucketName,
-    });
-
-    // Put the etl script into the bucket.
-    new s3Deployment.BucketDeployment(this, 'DeployETLScripts', {
-      destinationBucket: etlScriptBucket,
-      sources: [s3Deployment.Source.asset('./lib/scripts')],  // Path to local folder containing etl_GPStoDb.py
-      destinationKeyPrefix: 'scripts/',  // Place scripts in the "scripts/" folder in S3
     });
 
     //Create Roles
