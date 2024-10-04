@@ -42,6 +42,7 @@ export class DataIngestionStack extends cdk.Stack {
     const athenaResultsBucket = new s3.Bucket(this, 'athenaResults', {
       bucketName: athenaResultsS3BucketName.toLowerCase(),  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
+      autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
     });
 
     // Athena Workgroup - assign athenaResultsBucket bucket to store reuslts.
@@ -68,7 +69,7 @@ export class DataIngestionStack extends cdk.Stack {
 
     // Deploy an empty file to the /tmp/ folder to simulate its existence
     new s3Deployment.BucketDeployment(this, 'DeployEmptyGpsData', {
-      destinationBucket: glueTempBucket,
+      destinationBucket: s3BucketDynamoDb,
       destinationKeyPrefix: 'gps_data/', // This ensures the file goes into the /tmp/ "folder"
       sources: [s3Deployment.Source.data('empty-file.txt', '')], // Deploy an empty file
     });
@@ -236,7 +237,7 @@ export class DataIngestionStack extends cdk.Stack {
       role: glueRole.roleArn,
       command: {
         name: 'glueetl',  // Specifies it's an ETL job
-        scriptLocation: `s3://${etlScriptBucket.bucketName}/scripts/etl_GPStoDB.py`,  // Path to the script in the new ETL script bucket
+        scriptLocation: `s3://${etlScriptBucket.bucketName}/scripts/etl_GPStoDb.py`,  // Path to the script in the new ETL script bucket
         pythonVersion: '3',  // Python 3 for the Glue job
       },
       defaultArguments: {
