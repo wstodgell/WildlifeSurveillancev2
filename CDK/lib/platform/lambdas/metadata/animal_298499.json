@@ -1,0 +1,24 @@
+{
+    "animal_id": 298499,
+    "species": "Elk",
+    "age": 7,
+    "weight": 341,
+    "location": {
+        "latitude": 45.82634,
+        "longitude": -105.72889
+    },
+    "timestamp": "2024-10-06T20:18:52Z",
+    "image_resolution": "2560x1440",
+    "biopsy_data": {
+        "tissue_type": "Blood",
+        "biopsy_date": "2024-10-12",
+        "sample_condition": "Frozen",
+        "analysis_results": {
+            "cell_count": 603891,
+            "genetic_variants": [
+                "Variant B"
+            ]
+        },
+        "lab_id": "LAB 123"
+    }
+}

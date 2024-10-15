@@ -1,0 +1,25 @@
+{
+    "animal_id": 298504,
+    "species": "Deer",
+    "age": 4,
+    "weight": 319,
+    "location": {
+        "latitude": 42.52692,
+        "longitude": -108.04141
+    },
+    "timestamp": "2024-10-10T20:18:52Z",
+    "image_resolution": "1920x1080",
+    "biopsy_data": {
+        "tissue_type": "Bone Marrow",
+        "biopsy_date": "2024-10-13",
+        "sample_condition": "Fresh",
+        "analysis_results": {
+            "cell_count": 665109,
+            "genetic_variants": [
+                "Variant E",
+                "Variant C"
+            ]
+        },
+        "lab_id": "LAB 123"
+    }
+}

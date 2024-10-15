@@ -1,0 +1,26 @@
+{
+    "animal_id": 298500,
+    "species": "Deer",
+    "age": 2,
+    "weight": 210,
+    "location": {
+        "latitude": 39.35103,
+        "longitude": -106.57349
+    },
+    "timestamp": "2024-10-10T20:18:52Z",
+    "image_resolution": "2560x1440",
+    "biopsy_data": {
+        "tissue_type": "Muscle",
+        "biopsy_date": "2024-10-13",
+        "sample_condition": "Frozen",
+        "analysis_results": {
+            "cell_count": 716061,
+            "genetic_variants": [
+                "Variant A",
+                "Variant E",
+                "Variant B"
+            ]
+        },
+        "lab_id": "LAB 123"
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "animal_id": 298503,
+    "species": "Deer",
+    "age": 5,
+    "weight": 228,
+    "location": {
+        "latitude": 38.35087,
+        "longitude": -103.11733
+    },
+    "timestamp": "2024-10-07T20:18:52Z",
+    "image_resolution": "2560x1440",
+    "biopsy_data": {
+        "tissue_type": "Liver",
+        "biopsy_date": "2024-10-06",
+        "sample_condition": "Frozen",
+        "analysis_results": {
+            "cell_count": 535771,
+            "genetic_variants": [
+                "Variant D",
+                "Variant F",
+                "Variant B"
+            ]
+        },
+        "lab_id": "LAB 123"
+    }
+}

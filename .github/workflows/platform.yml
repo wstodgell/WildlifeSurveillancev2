@@ -86,3 +86,8 @@ jobs:
       - name: Get CDK Stack Outputs
         run: |
           aws cloudformation describe-stacks --stack-name DataIngestionStack --query 'Stacks[0].Outputs' --output table
+
+      - name: Deploy File Gateway Stack (if separate)
+        run: |
+          cd CDK
+          npx cdk deploy FileGatewayStack --require-approval never
