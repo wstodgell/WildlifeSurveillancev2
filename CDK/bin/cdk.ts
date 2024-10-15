@@ -7,7 +7,7 @@ import { IotCodeStack } from '../lib/iot/iot-stack';
 import { DataIngestionStack } from '../lib/platform/data-ingestion-stack';
 import { FileGatewayStack } from '../lib/platform/file-gateway-stack';
 import { ConfigurationStack } from '../lib/configuration-stack';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
+
 
 const app = new cdk.App();
 
@@ -36,6 +36,6 @@ new DataIngestionStack(app, 'DataIngestionStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
 
-new FileGatewayStack(app, 'DataIngestionStack', {
+new FileGatewayStack(app, 'FileGatewayStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
