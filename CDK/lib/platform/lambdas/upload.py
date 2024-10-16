@@ -38,4 +38,5 @@ def handler(event, context):
                 s3.upload_file(file_path, bucket_name, s3_key)
                 print(f"Uploaded {filename} to {bucket_name}")
     
+    print("Lambda handler invoked")
     return {"statusCode": 200, "body": "File upload check complete"}
