@@ -91,3 +91,8 @@ jobs:
         run: |
           cd CDK
           npx cdk deploy FileGatewayStack --require-approval never
+
+      - name: Deploy Clinic Ingestion Stack
+        run: |
+          cd CDK
+          npx cdk deploy ClinicIngestionStack --require-approval never
