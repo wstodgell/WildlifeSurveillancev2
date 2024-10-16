@@ -60,7 +60,7 @@ export class FileGatewayStack extends Stack {
           image: lambda.Runtime.PYTHON_3_9.bundlingImage,
           command: [
             'bash', '-c',
-            'mkdir -p ./tmp/images ./tmp/metadata && cp -r ./images/* ./tmp/images/ && cp -r ./metadata/* ./tmp/metadata/ && cp -r . /asset-output'
+            'mkdir -p ./images ./metadata && cp -r ./images/* ./metadata/* /asset-output/'
           ],
         },
       }),
@@ -69,7 +69,8 @@ export class FileGatewayStack extends Stack {
       },
     });
     
-
+    
+    fileGatewayBucket.grantReadWrite(uploadFilesLambda);
     // Grant Lambda permission to write to the S3 bucket
     fileGatewayBucket.grantPut(uploadFilesLambda);
 

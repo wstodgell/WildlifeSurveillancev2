@@ -6,8 +6,15 @@ s3 = boto3.client('s3')
 def handler(event, context):
     bucket_name = os.getenv('S3_BUCKET_NAME')
     
+    # Local image and metadata directories inside Lambda package
+    image_dir = '/var/task/images'
+    metadata_dir = '/var/task/metadata'
+    
+    # Log directory contents
+    print("Contents of /var/task/images:", os.listdir(image_dir))
+    print("Contents of /var/task/metadata:", os.listdir(metadata_dir))
+    
     # Upload images
-    image_dir = '/mnt/images'
     for filename in os.listdir(image_dir):
         if filename.endswith((".jpg", ".png")):
             s3_key = f"images/{filename}"
@@ -20,7 +27,6 @@ def handler(event, context):
                 print(f"Uploaded {filename} to {bucket_name}")
     
     # Upload metadata
-    metadata_dir = '/mnt/metadata'
     for filename in os.listdir(metadata_dir):
         if filename.endswith(".json"):
             s3_key = f"metadata/{filename}"
