@@ -12,9 +12,8 @@ export class FileGatewayStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // Step 1: Create the S3 bucket
     const fileGatewayBucket = new Bucket(this, 'FileGatewayBucket', {
-      bucketName: 'lab-data-storage',
+      bucketName: `lab-data-storage-${this.account}-${this.region}`,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       versioned: true,
       lifecycleRules: [
@@ -31,6 +30,7 @@ export class FileGatewayStack extends Stack {
       ],
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
+    
 
     // Step 2: Create an IAM Role for File Gateway access to S3
     const fileGatewayRole = new Role(this, 'FileGatewayRole', {
@@ -51,11 +51,19 @@ export class FileGatewayStack extends Stack {
       ],
     }));
 
-    // Step 3: Create the Lambda Function to upload files to S3
     const uploadFilesLambda = new lambda.Function(this, 'UploadFilesLambda', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'upload.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, 'lambdas')), // Point to your Lambda directory
+      code: lambda.Code.fromAsset(path.join(__dirname, 'lambdas'), {
+        exclude: ['*.pyc'],
+        bundling: {
+          image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+          command: [
+            'bash', '-c', 
+            'mkdir -p /mnt/images /mnt/metadata && cp -r ./images/* /mnt/images/ && cp -r ./metadata/* /mnt/metadata/ && cp -r . /asset-output'
+          ],
+        },
+      }),
       environment: {
         S3_BUCKET_NAME: fileGatewayBucket.bucketName,
       },

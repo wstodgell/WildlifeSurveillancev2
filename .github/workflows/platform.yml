@@ -9,7 +9,7 @@ on:
   workflow_dispatch: # Manual trigger
 
 jobs:
-  deploy:
+  platform-deploy:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -87,7 +87,7 @@ jobs:
         run: |
           aws cloudformation describe-stacks --stack-name DataIngestionStack --query 'Stacks[0].Outputs' --output table
 
-      - name: Deploy File Gateway Stack (if separate)
+      - name: Deploy File Gateway Stack
         run: |
           cd CDK
           npx cdk deploy FileGatewayStack --require-approval never
