@@ -1,0 +1,6 @@
+{
+  "ClinicIngestionStack": {
+    "SecretName": "DBCredentialsSecretAFB45EA2-uNmy8lcMuJtF",
+    "RdsEndpoint": "clinicingestionstack-rdspostgresinstancef1143a12-xgfsjuohx6is.cxakkgum4jiz.us-east-1.rds.amazonaws.com"
+  }
+}

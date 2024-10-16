@@ -6,6 +6,7 @@ import { EcsStack } from '../lib/iot/ecs-stack';
 import { IotCodeStack } from '../lib/iot/iot-stack';
 import { DataIngestionStack } from '../lib/platform/data-ingestion-stack';
 import { FileGatewayStack } from '../lib/platform/file-gateway-stack';
+import { ClinicIngestionStack } from '../lib/platform/clinic-ingestion-stack';
 import { ConfigurationStack } from '../lib/configuration-stack';
 
 
@@ -33,6 +34,10 @@ new IotCodeStack(app, 'IotCodeStack', {
 
 // *** PLATFORM
 new DataIngestionStack(app, 'DataIngestionStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
+
+new ClinicIngestionStack(app, 'ClinicIngestionStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
 
