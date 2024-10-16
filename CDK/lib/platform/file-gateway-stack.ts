@@ -53,14 +53,14 @@ export class FileGatewayStack extends Stack {
 
     const uploadFilesLambda = new lambda.Function(this, 'UploadFilesLambda', {
       runtime: lambda.Runtime.PYTHON_3_9,
-      handler: 'upload.handler',
+      handler: 'upload.handler',  // 'upload' refers to upload.py, 'handler' is the function inside upload.py
       code: lambda.Code.fromAsset(path.join(__dirname, 'lambdas'), {
         exclude: ['*.pyc'],
         bundling: {
           image: lambda.Runtime.PYTHON_3_9.bundlingImage,
           command: [
             'bash', '-c',
-            'mkdir -p ./images ./metadata && cp -r ./images/* ./metadata/* /asset-output/'
+            'cp -r . /asset-output/'  // Copy everything in the lambdas directory, including upload.py
           ],
         },
       }),
@@ -68,6 +68,7 @@ export class FileGatewayStack extends Stack {
         S3_BUCKET_NAME: fileGatewayBucket.bucketName,
       },
     });
+    
     
     
     fileGatewayBucket.grantReadWrite(uploadFilesLambda);
