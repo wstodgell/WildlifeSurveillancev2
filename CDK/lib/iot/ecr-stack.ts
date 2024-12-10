@@ -6,18 +6,12 @@ import * as common from '../common';
 
 
 export class EcrStack extends cdk.Stack {
-  public readonly GPSEcrRepositoryUri: string;
   public readonly TestEcrRepositoryUri: string;
-
+  public readonly GPSEcrRepositoryUri: string;
+  public readonly EnvEcrRepositoryUri: string;
   
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
-    const GPSRepository = new ecr.Repository(this, 'MyIotGpsAppRepository', {
-      repositoryName: common.ECR_REPO_GPS,
-      emptyOnDelete: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
 
     const TestRepository = new ecr.Repository(this, 'MyIotTestAppRepository', {
       repositoryName: common.ECR_REPO_TEST,
@@ -25,8 +19,22 @@ export class EcrStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    const GPSRepository = new ecr.Repository(this, 'MyIotGpsAppRepository', {
+      repositoryName: common.ECR_REPO_GPS,
+      emptyOnDelete: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    const EnvRepository = new ecr.Repository(this, 'MyIotEnvAppRepository', {
+      repositoryName: common.ECR_REPO_ENV,
+      emptyOnDelete: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     // store the repository - property of cdk.Stack URI is typically: aws_account_id.dkr.ecr.region.amazonaws.com/repository_name
     this.GPSEcrRepositoryUri = GPSRepository.repositoryUri;
+
+    this.EnvEcrRepositoryUri = EnvRepository.repositoryUri;
 
     // store the repository - property of cdk.Stack URI is typically: aws_account_id.dkr.ecr.region.amazonaws.com/repository_name
     this.TestEcrRepositoryUri = TestRepository.repositoryUri;
@@ -36,6 +44,12 @@ export class EcrStack extends cdk.Stack {
       value: this.GPSEcrRepositoryUri,
       description: 'URI of the GPS ECR repository',
       exportName: 'GPSEcrRepositoryUri'
+    });
+
+    new cdk.CfnOutput(this, 'EnvEcrRepositoryUri', {
+      value: this.GPSEcrRepositoryUri,
+      description: 'URI of the Env ECR repository',
+      exportName: 'EnvEcrRepositoryUri'
     });
 
     new cdk.CfnOutput(this, 'TestEcrRepositoryUri', {
@@ -59,7 +73,7 @@ export class EcrStack extends cdk.Stack {
     });
 
     // Attach the AdministratorAccess policy to the role
-    ecsTaskExecutionRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'));
+    //ecsTaskExecutionRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'));
 
   }
 }

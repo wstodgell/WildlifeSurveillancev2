@@ -32,7 +32,18 @@ export function createIoTThing(
   });
   iotPolicy.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);  // Mark for deletion
 
-  // Create IoT Certificate using custom resource
+  // Generate and manage an IoT certificate for secure device communication
+  // This custom resource interacts with AWS IoT Core to:
+  // 1. Create a new certificate and private key pair for the IoT Thing during stack creation.
+  //    - This certificate will enable the IoT device (e.g., GPS collar) to authenticate with AWS IoT Core via mutual TLS (mTLS).
+  // 2. Automatically activate the certificate upon creation to make it ready for use.
+  // 3. Store the unique certificate ID, which is later used for deletion when the stack is destroyed.
+  // 4. Ensure proper permissions are in place for creating and managing IoT certificates.
+  //
+  // This certificate is an essential part of the IoT device lifecycle, as it enables secure
+  // and encrypted MQTT communication between the device (via ECS containers) and AWS IoT Core,
+  // ensuring only authorized devices can connect and transmit data to the architecture.
+
   const certResource = new cr.AwsCustomResource(scope, `CreateIoTCertificate-${thingName}`, {
     onCreate: {
       service: 'Iot',
@@ -59,13 +70,13 @@ export function createIoTThing(
     ]),
   });
 
-  // Extract certificate and private key - sanitize the \ns because it's causing error
+  // Extract certificate and private key - sanitize the \ns because it's causing error ensure proper formatting for downstream use.
   const certPem = (certResource.getResponseField('certificatePem') ?? '').replace(/\\n/g, '\n');
   const privateKey = (certResource.getResponseField('keyPair.PrivateKey') ?? '').replace(/\\n/g, '\n');
 
-  // Log the values for debugging purposes (optional)
-  console.log('Certificate PEM:', certPem);
-  console.log('Private Key:', privateKey);
+  // Log the values for debugging purposes (optional) MASSIVE SEUCIRITY RISK
+  //console.log('Certificate PEM:', certPem);
+  //console.log('Private Key:', privateKey);
 
   // Store the certificate and private key in Secrets Manager as a JSON object
   // While the SecretValue.unsafePlainText is convenient for testing, 

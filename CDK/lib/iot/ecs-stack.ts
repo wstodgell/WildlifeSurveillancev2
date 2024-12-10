@@ -4,6 +4,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { createIoTECS } from './helpers/ecs-factory'; // Import the factory function
 
 
 export class EcsStack extends cdk.Stack {
@@ -12,6 +13,7 @@ export class EcsStack extends cdk.Stack {
 
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    
 
     // Get AWS account ID and region from environment variables
     const accountId = process.env.AWS_ACCOUNT_ID;
@@ -29,15 +31,6 @@ export class EcsStack extends cdk.Stack {
     const ecsTaskExecutionRoleArn = cdk.Fn.importValue('EcsTaskExecutionRoleArn');
     const ecsTaskExecutionRole = iam.Role.fromRoleArn(this, 'ImportedEcsTaskExecutionRole', ecsTaskExecutionRoleArn);
 
-    //Creates a new CloudWatch Log Group in AWS.  LogGroup = container for storing logs
-    //This = ECS Stack
-    //ECSLogGroup (identifier)
-    const logGroup = new logs.LogGroup(this, 'EcsLogGroup', {
-      logGroupName: '/ecs/IoT-GPS',
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Ensure logs are cleaned up with stack removal
-      retention: logs.RetentionDays.ONE_WEEK,   // Adjust retention period as needed
-    });
-
      // Create an ECS Cluster for ALL IoT Mock scripts
      const cluster = new ecs.Cluster(this, 'IoTCluster', {
       clusterName: 'IoTCluster',
@@ -53,10 +46,21 @@ export class EcsStack extends cdk.Stack {
     });
 
     // ***********************************  SETUP GPS ROLES AND CONTAINERS
+
+    //Creates a new CloudWatch Log Group in AWS.  LogGroup = container for storing logs
+    //This = ECS Stack
+    //ECSLogGroup (identifier)
+    const logGroup = new logs.LogGroup(this, 'EcsLogGroup', {
+      logGroupName: '/ecs/IoT-GPS',
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Ensure logs are cleaned up with stack removal
+      retention: logs.RetentionDays.ONE_WEEK,   // Adjust retention period as needed
+    });
+
     // Retrieve the secrets for TestThing and GPSThing from AWS Secrets Manager
     
     /// **IMPORTANT** - secret manager SPECIFIC to this string where secrets are stored.
     // Later created in iot-stack in format of secretName: `IoT/${thingName}/certs`,  
+    // retrieved by MTTQS_SETUP.PY to publish to IoTCore
     const iotGPSThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GPSThingSecret', 'IoT/GPSThing/certs');
 
     // Create a Task Role for GPS task that can access GPSThing's secret
