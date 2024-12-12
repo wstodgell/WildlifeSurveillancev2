@@ -46,10 +46,10 @@ export class EcrStack extends cdk.Stack {
       exportName: 'GPSEcrRepositoryUri'
     });
 
-    new cdk.CfnOutput(this, 'EnvEcrRepositoryUri', {
+    new cdk.CfnOutput(this, 'ENVEcrRepositoryUri', {
       value: this.GPSEcrRepositoryUri,
       description: 'URI of the Env ECR repository',
-      exportName: 'EnvEcrRepositoryUri'
+      exportName: 'ENVEcrRepositoryUri'
     });
 
     new cdk.CfnOutput(this, 'TestEcrRepositoryUri', {
@@ -65,25 +65,26 @@ export class EcrStack extends cdk.Stack {
       roleName: 'ecsTaskExecutionRole',  // Explicit role name
     });
 
-    //export this for ecs-stack
-    new cdk.CfnOutput(this, 'EcsTaskExecutionRoleArn', {
+    // Attach the AdministratorAccess policy to the role
+    // Enhanced security recommenation - specify resources instead of wildcard
+    // Attach the AdministratorAccess policy to the role
+    ecsTaskExecutionRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "ecr:GetAuthorizationToken", // Allows ECS to authenticate and retrieve tokens from ECR.
+        "ecr:BatchCheckLayerAvailability", // Verifies the availability of image layers in ECR before pulling.
+        "ecr:GetDownloadUrlForLayer", // Retrieves URLs for downloading image layers from ECR.
+        "ecr:BatchGetImage" // Retrieves Docker images from ECR, improving efficiency by batching requests.
+      ],
+      resources: ["*"], // Recommended: Restrict this to specific ECR repository ARNs for enhanced security.
+    }));
+
+     //export this for ecs-stack to attach to Task Definition
+     new cdk.CfnOutput(this, 'EcsTaskExecutionRoleArn', {
       value: ecsTaskExecutionRole.roleArn,
       description: 'ARN of the ECS Task Execution Role',
       exportName: 'EcsTaskExecutionRoleArn',
     });
-
-    // Attach the AdministratorAccess policy to the role
-    //ecsTaskExecutionRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'));
-    ecsTaskExecutionRole.addToPolicy(new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-      ],
-      resources: ["*"], // Restrict to the specific log group
-    }));
 
   }
 }

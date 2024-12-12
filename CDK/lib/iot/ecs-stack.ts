@@ -25,6 +25,7 @@ export class EcsStack extends cdk.Stack {
 
     // Import the ECR repository URIs created in the EcrStack - required for containers to get the images
     const GPSEcrRepositoryUri = cdk.Fn.importValue('GPSEcrRepositoryUri');
+    const ENVEcrRepositoryUri = cdk.Fn.importValue('ENVEcrRepositoryUri')
     const TestEcrRepositoryUri = cdk.Fn.importValue('TestEcrRepositoryUri');
 
     // Import the ECS task execution role created in EcrStack - required so Fargate can access
@@ -78,16 +79,16 @@ export class EcsStack extends cdk.Stack {
     // Grant permissions for CloudWatch Logs
     gpsTaskRole.addToPolicy(new iam.PolicyStatement({
       actions: [
-        "logs:CreateLogGroup",      // Permission to create log groups
-        "logs:CreateLogStream",     // Permission to create log streams
-        "logs:PutLogEvents",         // Permission to put log events into log streams
-        "iot:DescribeEndpoint",
-        "iot:Connect",
-        "iot:Publish",
-        "iot:Subscribe",
-        "iot:Receive"
+        "logs:CreateLogGroup", // Permission to create log groups
+        "logs:CreateLogStream", // Permission to create log streams
+        "logs:PutLogEvents", // Permission to put log events into log streams
+        "iot:DescribeEndpoint", // Allows describing IoT endpoints
+        "iot:Connect", // Allows establishing a connection to IoT Core
+        "iot:Publish", // Allows publishing messages to IoT topics
+        "iot:Subscribe", // Allows subscribing to IoT topics
+        "iot:Receive" // Allows receiving messages from IoT topics
       ],
-      resources: ["*"], // Restrict to the specific log group
+      resources: ["*"], // Restrict to the specific resources necessary for these actions
     }));
 
     // Create a Fargate Task Definition for IoT-GPS
@@ -102,8 +103,6 @@ export class EcsStack extends cdk.Stack {
     // Define the container for the GPS task, pulled from the ECR repository
     const GPSContainer = GPSTaskDefinition.addContainer('GPSContainer', {
       image: ecs.ContainerImage.fromRegistry(GPSEcrRepositoryUri), // Pulls container image from ECR
-      memoryLimitMiB: 512, // Container memory limit
-      cpu: 256, // Container CPU limit
       logging: new ecs.AwsLogDriver({
         streamPrefix: 'IoT-GPS', // Prefix for the CloudWatch log stream
         logGroup: logGroup, // The log group where container logs will be sent
@@ -125,6 +124,22 @@ export class EcsStack extends cdk.Stack {
     });
 
     // ********************  SETUP TEST ROLES AND CONTAINERS
+
+
+
+
+
+
+    const ENVFargateService = createIoTECS(this, 'ENV', 'ENVThingSecret', 'IoT/ENVThing/certs', 'ENVTaskRole', 
+      ecsTaskExecutionRole, ENVEcrRepositoryUri, cluster)
+    
+    new cdk.CfnOutput(this, 'GPSFargateServiceName', {
+      value: ENVFargateService.serviceName,
+      description: 'Name of the ENV ECS Fargate Service',
+      exportName: 'GPSFargateServiceName'
+    });
+
+
 
 
     //const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
@@ -212,9 +227,11 @@ export class EcsStack extends cdk.Stack {
       exportName: 'GPSFargateServiceName'
     });
 
+
+
     // Output for the Task Definition and Service
     new cdk.CfnOutput(this, 'TestTaskDefinitionFamily', {
-      value: GPSTaskDefinition.family,
+      value: testTaskDefinition.family,
       description: 'Family of the Test ECS Task Definition',
       exportName: 'TestTaskDefinitionFamily'
     });
