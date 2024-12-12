@@ -133,10 +133,10 @@ export class EcsStack extends cdk.Stack {
     const ENVFargateService = createIoTECS(this, 'ENV', 'ENVThingSecret', 'IoT/ENVThing/certs', 'ENVTaskRole', 
       ecsTaskExecutionRole, ENVEcrRepositoryUri, cluster)
     
-    new cdk.CfnOutput(this, 'GPSFargateServiceName', {
+    new cdk.CfnOutput(this, 'ENVFargateServiceName', {
       value: ENVFargateService.serviceName,
       description: 'Name of the ENV ECS Fargate Service',
-      exportName: 'GPSFargateServiceName'
+      exportName: 'ENVFargateServiceName'
     });
 
 
