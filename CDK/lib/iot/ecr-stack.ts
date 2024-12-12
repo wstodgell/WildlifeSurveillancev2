@@ -74,6 +74,16 @@ export class EcrStack extends cdk.Stack {
 
     // Attach the AdministratorAccess policy to the role
     //ecsTaskExecutionRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'));
+    ecsTaskExecutionRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+      ],
+      resources: ["*"], // Restrict to the specific log group
+    }));
 
   }
 }
