@@ -7,10 +7,12 @@ export class IotCodeStack extends cdk.Stack {
     super(scope, id, props);
 
     const GPSThingName = 'GPSThing'
+    const ENVThingName = 'ENVThing'
     const TestThingName = 'TestThing'
     const policyName = 'IoTDevicePolicy-'
 
     createIoTThing(this, GPSThingName, (policyName + GPSThingName), cdk.Stack.of(this).region);
+    createIoTThing(this, ENVThingName, (policyName + ENVThingName), cdk.Stack.of(this).region);
     createIoTThing(this, TestThingName, (policyName + TestThingName), cdk.Stack.of(this).region);
   }
 }

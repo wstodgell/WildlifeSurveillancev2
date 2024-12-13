@@ -34,7 +34,7 @@ export function createIoTThing(
 
   // Generate and manage an IoT certificate for secure device communication
   // This custom resource interacts with AWS IoT Core to:
-  // 1. Create a new certificate and private key pair for the IoT Thing during stack creation.
+  // 1. Create a new certificate and private key pair for the *IoT Thing* during stack creation.
   //    - This certificate will enable the IoT device (e.g., GPS collar) to authenticate with AWS IoT Core via mutual TLS (mTLS).
   // 2. Automatically activate the certificate upon creation to make it ready for use.
   // 3. Store the unique certificate ID, which is later used for deletion when the stack is destroyed.

@@ -108,6 +108,18 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
+      - name: Output ENV_ECR URI
+        id: output-env-ecr-uri
+        run: |
+          ENV_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='ENVEcrRepositoryUri'].OutputValue" --output text)
+          echo "ENV_ECR_URI=$ENV_ECR_URI"
+          if [ -z "$ENV_ECR_URI" ]; then
+            echo "ENV_ECR_URI is empty!"
+          fi
+          echo "ENV_ECR_URI=$ENV_ECR_URI" >> $GITHUB_ENV
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
       - name: Output TEST_ECR URI
         id: output-test-ecr-uri
         run: |
@@ -137,6 +149,21 @@ jobs:
         run: |
           docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
           docker push ${{ env.GPS_ECR_URI }}:latest
+
+      # Log in to the Amazon GPS ECR registry
+      - name: Log in to Amazon GPS ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.GPS_ECR_URI }}
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Build and push the Docker image to ECR
+      # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
+      # we broaden the scope to.
+      - name: Build and Push *ENV* Docker Image
+        run: |
+          docker build -t ${{ env.ENV_ECR_URI }}:latest -f IoTMockSensors/IoT_Env/Dockerfile IoTMockSensors/IoT_Env
+          docker push ${{ env.ENV_ECR_URI }}:latest
 
       # Log in to the Amazon TEST ECR registry
       - name: Log in to Amazon TEST ECR
