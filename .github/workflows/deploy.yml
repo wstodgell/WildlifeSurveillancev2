@@ -120,6 +120,9 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
+      - name: Confirm ENV_ECR URI
+        run: echo "ENV_ECR_URI is set to ${{ env.ENV_ECR_URI }}"
+
       - name: Output TEST_ECR URI
         id: output-test-ecr-uri
         run: |
@@ -151,9 +154,9 @@ jobs:
           docker push ${{ env.GPS_ECR_URI }}:latest
 
       # Log in to the Amazon GPS ECR registry
-      - name: Log in to Amazon GPS ECR
+      - name: Log in to Amazon ENV ECR
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.GPS_ECR_URI }}
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ENV_ECR_URI }}
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
