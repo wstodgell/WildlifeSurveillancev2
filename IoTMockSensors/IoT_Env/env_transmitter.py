@@ -3,7 +3,7 @@ import logging
 import time
 from datetime import datetime
 from setup_mqtt import mqtt_connect, log_to_cloudwatch
-from IoTMockSensors.IoT_Env.env_logic import update_elk_positions
+from env_logic import update_elk_positions
 import configuration
 from colorama import Fore, Style, init
 import traceback
