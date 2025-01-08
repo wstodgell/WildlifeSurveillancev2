@@ -14,7 +14,7 @@ export class ConfigurationStack extends cdk.Stack {
 
     const parameter2 = new ssm.StringParameter(this, 'MyParameter', {
       parameterName: '/iot-topics/env-topic-name',
-      stringValue: 'IoT/GPS',
+      stringValue: 'IoT/ENV',
     });
   }
 }

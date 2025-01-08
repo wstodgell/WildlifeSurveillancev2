@@ -33,10 +33,10 @@ def publish_message(mqtt_client):
     else:
       # Ensure the mqtt_client is valid before trying to publish
       if mqtt_client:
-        print(f'Publishing topic: {Fore.GREEN}{configuration.GPS_TOPIC_NAME}{Style.RESET_ALL}')
-        mqtt_client.publish(configuration.GPS_TOPIC_NAME, json.dumps(payload), 1)
-        logging.info(f"Published: {json.dumps(payload)} to {configuration.GPS_TOPIC_NAME}")
-        log_to_cloudwatch(f"Published: {json.dumps(payload)} to {configuration.GPS_TOPIC_NAME}")
+        print(f'Publishing topic: {Fore.GREEN}{configuration.ENV_TOPIC_NAME}{Style.RESET_ALL}')
+        mqtt_client.publish(configuration.ENV_TOPIC_NAME, json.dumps(payload), 1)
+        logging.info(f"Published: {json.dumps(payload)} to {configuration.ENV_TOPIC_NAME}")
+        log_to_cloudwatch(f"Published: {json.dumps(payload)} to {configuration.ENV_TOPIC_NAME}")
       else:
         logging.error(f"MQTT client is None. Cannot publish message.")
   except Exception as e:
