@@ -19,9 +19,11 @@ def log_error_with_traceback(e):
 def publish_message(mqtt_client):
   try:
     print(f"{Fore.YELLOW}Attempting to Publish Message{Style.RESET_ALL}")
-
     env_data = update_environment_data()  # Get environment data
     print(f"DEBUG: Environment data generated: {env_data}")  # Debug log
+
+    # Verify the data structure of env_data
+    print("Inspecting env_data structure:", env_data)
 
     # Create a JSON payload to send to AWS IoT Core
     payload = configuration.create_topic(env_data)  # Use env_data here

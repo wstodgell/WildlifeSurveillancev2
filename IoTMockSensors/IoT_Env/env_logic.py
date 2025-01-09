@@ -15,31 +15,21 @@ for _ in range(NUM_SENSORS):
     delta_lon = distance * math.sin(angle) / (111 * math.cos(math.radians(start_lat)))
     sensor_positions.append([start_lat + delta_lat, start_lon + delta_lon])
 
-
 def get_wind_direction(base_direction="East"):
-    # Variability factor (in degrees)
     variability = 10  # The wind can vary by +/- 10 degrees
     direction_change = random.uniform(-variability, variability)
-    
     directions = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"]
     base_index = directions.index(base_direction)
-    
-    # Calculate new direction index with wrap-around
     num_directions = len(directions)
     new_index = (base_index + int(direction_change // (360 / num_directions))) % num_directions
-    
     return directions[new_index]
 
-def update_environment():
-    # Simulate environmental data for each sensor
+def update_environment_data():
     environment_data = []
     for lat, lon in sensor_positions:
-        # Generate random environmental data
         temperature = random.uniform(-5, 30)  # Temperature in Celsius
         humidity = random.uniform(20, 100)  # Humidity in percentage
-        wind_direction = get_wind_direction()  # Static wind direction
-
-        # Append data for each sensor
+        wind_direction = get_wind_direction()  # Get dynamic wind direction
         environment_data.append({
             "latitude": lat,
             "longitude": lon,
@@ -47,5 +37,4 @@ def update_environment():
             "humidity": humidity,
             "wind_direction": wind_direction
         })
-    
     return environment_data

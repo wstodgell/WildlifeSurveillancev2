@@ -24,14 +24,22 @@ def setup_config():
     print(f"{Fore.RED}*******************Retrieved {ENV_TOPIC_NAME}{Style.RESET_ALL}")
 
 
+
 def create_topic(payload):
-  transformed_payload = [
-    {"sensor_id": sensor_id, "lat": lat, "lon": lon}
-    for sensor_id, (lat, lon) in enumerate(payload)
-  ]
-  return {
-    "messageId": str(uuid.uuid4()),
-    "topic": ENV_TOPIC_NAME,
-    "timestamp": time.time(),
-    "payload": transformed_payload
-  }
+    transformed_payload = [
+        {
+            "sensor_id": sensor_id,
+            "lat": item['latitude'],
+            "lon": item['longitude'],
+            "temperature": item['temperature'],
+            "humidity": item['humidity'],
+            "wind_direction": item['wind_direction']
+        }
+        for sensor_id, item in enumerate(payload)
+    ]
+    return {
+        "messageId": str(uuid.uuid4()),
+        "topic": ENV_TOPIC_NAME,
+        "timestamp": time.time(),
+        "payload": transformed_payload
+    }
