@@ -3,11 +3,10 @@ import logging
 import time
 from datetime import datetime
 from setup_mqtt import mqtt_connect, log_to_cloudwatch
-from env_logic import update_elk_positions
+from env_logic import update_environment_data 
 import configuration
 from colorama import Fore, Style, init
 import traceback
-
 
 
 # Setup logging
@@ -21,11 +20,11 @@ def publish_message(mqtt_client):
   try:
     print(f"{Fore.YELLOW}Attempting to Publish Message{Style.RESET_ALL}")
 
-    elk_positions = update_elk_positions()
-    print(f"DEBUG: elk_positions generated: {elk_positions}")  # Add this debug log
+    env_data = update_environment_data()  # Get environment data
+    print(f"DEBUG: Environment data generated: {env_data}")  # Debug log
 
     # Create a JSON payload to send to AWS IoT Core
-    payload = configuration.create_topic(elk_positions)
+    payload = configuration.create_topic(env_data)  # Use env_data here
     print(f"{Fore.GREEN}The payload: {json.dumps(payload, indent=2)}{Style.RESET_ALL}")
 
     if configuration.TESTING:
