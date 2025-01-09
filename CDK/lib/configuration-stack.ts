@@ -7,12 +7,12 @@ export class ConfigurationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const parameter = new ssm.StringParameter(this, 'MyParameter', {
+    const GPSTopicParameter = new ssm.StringParameter(this, 'GPSTopicParameter', {
       parameterName: '/iot-topics/gps-topic-name',
       stringValue: 'IoT/GPS',
     });
 
-    const parameter2 = new ssm.StringParameter(this, 'MyParameter', {
+    const ENVTopicParameter = new ssm.StringParameter(this, 'ENVTopicParameter', {
       parameterName: '/iot-topics/env-topic-name',
       stringValue: 'IoT/ENV',
     });
