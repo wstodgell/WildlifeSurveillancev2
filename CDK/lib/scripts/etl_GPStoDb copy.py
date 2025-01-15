@@ -1,17 +1,12 @@
 import sys
 from pyspark.context import SparkContext
 from awsglue.context import GlueContext
-from awsglue.job import Job
-from awsglue.transforms import *
 from awsglue.utils import getResolvedOptions
 
 # Initialize Glue job
-args = getResolvedOptions(sys.argv, ['JOB_NAME', 's3_output_path'])  # Get the s3_output_path argument
+args = getResolvedOptions(sys.argv, ['JOB_NAME'])
 sc = SparkContext()
 glueContext = GlueContext(sc)
-spark = glueContext.spark_session
-job = Job(glueContext)
-job.init(args['JOB_NAME'], args)
 
 # Read from DynamoDB table
 dynamo_frame = glueContext.create_dynamic_frame.from_options(
@@ -22,16 +17,15 @@ dynamo_frame = glueContext.create_dynamic_frame.from_options(
     }
 )
 
-# Step 3: Write the data to the S3 bucket in Parquet format (suitable for Athena queries)
-s3_output_path = args['s3_output_path']  # Use the passed S3 output path
+# Write to S3 in Parquet format
+output_path = "s3://dynamo-to-s3-975049909803-dataingestionstack/"
 glueContext.write_dynamic_frame.from_options(
     frame=dynamo_frame,
     connection_type="s3",
     connection_options={
-        "path": s3_output_path
+        "path": output_path
     },
     format="parquet"
 )
 
-# Step 4: Commit the job to signal completion
-job.commit()
+print(f"Data successfully written to {output_path}")

@@ -171,12 +171,13 @@ export class DataIngestionStack extends cdk.Stack {
     // Grant IoT Core permissions to invoke the Lambda function
     gpsTopicProcessorLambda.grantInvoke(new iam.ServicePrincipal('iot.amazonaws.com'));
 
-    // EXPLICIT: Make sure the Lambda function is destroyed
+    // EXPLICIT: Make sure the Lambda function is destroyed with stack
     gpsTopicProcessorLambda.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
 
     // ***************** create glue crawlers for Dynamodb
     // Step 1: Create IAM Role for AWS Glue
 
+    //if a Glue database already exists, you do not want to create a new one or overwrite the existing one
     const glueDatabaseExistsParam = new CfnParameter(this, 'GlueDatabaseExists', {
       type: 'String',
       allowedValues: ['true', 'false'],
@@ -211,7 +212,7 @@ export class DataIngestionStack extends cdk.Stack {
 
     // Step 8: Create Glue Crawler with conditional reference to the Glue Database
     const glueCrawler = new CfnCrawler(this, 'DynamoDBGPSCrawler', {
-      role: glueRole.roleArn,  // Attach IAM Role to Glue Crawler
+      role: glueRole.roleArn,   // Attach IAM Role to Glue Crawler
       databaseName: Fn.conditionIf(
         'GlueDatabaseExistsCondition',
         glueDatabase.ref,        // Reference the newly created database (if GlueDatabaseExists = false)
@@ -228,9 +229,9 @@ export class DataIngestionStack extends cdk.Stack {
       schedule: {
         scheduleExpression: 'cron(0 12 * * ? *)',  // Optional Crawler schedule (daily at noon)
       },
-      tablePrefix: 'gps_',  // Prefix for tables created by the Crawler
+      tablePrefix: '',  // Prefix for tables created by the Crawler
     });
-
+ 
     //// CREATE the blueJob
     // Now use this bucket in your Glue job creation:
     const glueJob = new glue.CfnJob(this, 'DynamoDBToS3GlueJob', {
