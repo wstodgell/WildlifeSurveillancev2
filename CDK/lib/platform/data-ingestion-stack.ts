@@ -115,6 +115,7 @@ export class DataIngestionStack extends cdk.Stack {
 
     //Create Roles
     // Create the IAM role (LambdaDynamoDBAccessRole)
+    // This lambda is what is used to pull data from the IoT Topic and into the DynamoDB table
     const lambdaDynamoDBAccessRole = new iam.Role(this, 'LambdaDynamoDBAccessRole', {
       roleName: 'LambdaDynamoDBAccessRole', // Explicit role name
       assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'), // Lambda service will assume this role
@@ -125,6 +126,8 @@ export class DataIngestionStack extends cdk.Stack {
       ],
     });
 
+
+    //********************** GPS */
     // Create the DynamoDB Table (GpsDataTable)
     const gpsDataTable = new dynamodb.Table(this, 'GpsDataTable', {
       tableName: 'GpsDataTable',
@@ -134,7 +137,8 @@ export class DataIngestionStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY, // Automatically delete the table when the stack is destroyed
     });
 
-    // Create Lambda function for processing GPS data
+
+    // Create Lambda function for processing GPS data (Topic to DynamoDB)
     const gpsTopicProcessorLambda = new lambda.Function(this, 'GpsTopicProcessorLambda', {
       functionName: 'GPSTopicProcessor',
       code: lambda.Code.fromAsset('lib/lambda'), // Path to your Lambda code directory
@@ -248,12 +252,14 @@ export class DataIngestionStack extends cdk.Stack {
         '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
         '--s3_output_path': `s3://${s3BucketDynamoDb.bucketName}/gps_data/`,  // Pass the S3 bucket path to your Glue job
       },
-      maxRetries: 3,  // Retry the job 3 times if it fails
+      maxRetries: 0,  // Retry the job 3 times if it fails
       glueVersion: '3.0',  // Glue version
       numberOfWorkers: 2,  // Number of workers (adjust if needed)
       workerType: 'G.1X',  // Worker type
       timeout: 20,  // Job timeout in minutes
     });
+
+    //******************** ENV */
 
     // Output the Glue Job Name
     new cdk.CfnOutput(this, 'GlueJobNameOutput', {
