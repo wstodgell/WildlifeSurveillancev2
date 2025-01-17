@@ -18,20 +18,13 @@ dynamo_frame = glueContext.create_dynamic_frame.from_options(
     connection_type="dynamodb",
     connection_options={
         "dynamodb.input.tableName": "GpsDataTable",  # Replace with your table name
-        "dynamodb.throughput.read.percent": "0.5"   # Adjust throughput usage as needed
+        "dynamodb.throughput.read.percent": "1.0"   # Adjust throughput usage as needed
     }
 )
 
-# Step 3: Write the data to the S3 bucket in Parquet format (suitable for Athena queries)
+# Step 3: Combine all data into a single JSON file and write it to S3
 s3_output_path = args['s3_output_path']  # Use the passed S3 output path
-glueContext.write_dynamic_frame.from_options(
-    frame=dynamo_frame,
-    connection_type="s3",
-    connection_options={
-        "path": s3_output_path
-    },
-    format="parquet"
-)
+dynamo_frame.toDF().coalesce(1).write.mode('overwrite').json(s3_output_path)
 
 # Step 4: Commit the job to signal completion
 job.commit()

@@ -132,11 +132,12 @@ export function createIoTECS(
      
         //// CREATE the blueJob
         // Now use this bucket in your Glue job creation:
+        // Now use this bucket in your Glue job creation:
         const glueJob = new glue.CfnJob(scope, 'DynamoDBToS3GlueJob', {
-          role: glueRole.roleArn,
+          role: glueRole.roleArn,  // The IAM role for the Glue job
           command: {
             name: 'glueetl',  // Specifies it's an ETL job
-            scriptLocation: `s3://${etlScriptBucketName}/scripts/etl_GPStoDb.py`,  // Path to the script in the new ETL script bucket
+            scriptLocation: `s3://${etlScriptBucketName}/scripts/etl_GPStoDb.py`,  // Path to the script in the S3 bucket
             pythonVersion: '3',  // Python 3 for the Glue job
           },
           defaultArguments: {
@@ -145,13 +146,16 @@ export function createIoTECS(
             '--enable-metrics': '',  // Enables metrics tracking
             '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
             '--s3_output_path': `s3://${s3BucketDynamoDbName}/gps_data/`,  // Pass the S3 bucket path to your Glue job
+            '--extra-py-files': '',  // If additional Python dependencies are needed
+            '--Dlog4j2.formatMsgNoLookups': 'true',  // Disable Log4j lookups for security
           },
           maxRetries: 3,  // Retry the job 3 times if it fails
           glueVersion: '3.0',  // Glue version
-          numberOfWorkers: 2,  // Number of workers (adjust if needed)
+          numberOfWorkers: 2,  // Number of workers (adjust as needed)
           workerType: 'G.1X',  // Worker type
           timeout: 20,  // Job timeout in minutes
         });
+
     
         //******************** ENV */
     
