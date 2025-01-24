@@ -11,6 +11,7 @@ import { CfnParameter, CfnCondition, Fn } from 'aws-cdk-lib';
 import * as athena from 'aws-cdk-lib/aws-athena';
 import * as glue from 'aws-cdk-lib/aws-glue';
 import * as s3Deployment from 'aws-cdk-lib/aws-s3-deployment'; // Import S3 Deployment
+import { createGlueJob } from './helpers/glue-job-factory'; // Import the factory function
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -126,6 +127,9 @@ export class DataIngestionStack extends cdk.Stack {
       ],
     });
 
+    //******************* ENV */
+
+    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'env')
 
     //********************** GPS */
     // Create the DynamoDB Table (GpsDataTable)

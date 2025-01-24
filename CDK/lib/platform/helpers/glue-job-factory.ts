@@ -13,18 +13,53 @@ import * as glue from 'aws-cdk-lib/aws-glue';
 
 
 
-export function createIoTECS(
+export function createGlueJob(
     scope: Construct,
-    DynamoDBTableName: string,
     lambdaDynamoDBAccessRole: cdk.aws_iam.Role,
     etlScriptBucketName: string,
     glueTempBucketName: string,
-    s3BucketDynamoDbName: string
+    s3BucketDynamoDbName: string,
+    prefix: string
   ) {
+        const prefix_lower: string = prefix.toLocaleLowerCase();
+        const prefix_upper: string = prefix.toLocaleUpperCase();
+        const prefix_camel: string = prefix_lower.charAt(0).toUpperCase() + prefix_lower.slice(1);
+        
+        // Print values to GitHub Actions logs
+        console.log(`prefix_lower: ${prefix_lower}`);
+        console.log(`prefix_upper: ${prefix_upper}`);
+        console.log(`prefix_camel: ${prefix_camel}`);
+        console.log(`etlScriptBucketName: ${etlScriptBucketName}`);
+        console.log(`glueTempBucketName: ${glueTempBucketName}`);
+        console.log(`s3BucketDynamoDbName: ${s3BucketDynamoDbName}`);
+
+        const topicProcessorLambdaName = `${prefix_upper}TopicProcessorLambda`
+        const topicProcessorFunctionName = `${prefix_upper}TopicProcessor`
+        const topicProcessorFunctionCode = lambda.Code.fromAsset('lib/lambda') // Path to your Lambda code directory
+        const handlerLambda = `${prefix_upper}TopicProcessor.lambda_handler`
+
+        console.log(`topicProcessorLambdaName: ${topicProcessorLambdaName}`);
+        console.log(`topicProcessorFunctionName: ${topicProcessorFunctionName}`);
+        console.log(`topicProcessorFunctionCode: ${topicProcessorFunctionCode}`);
+        console.log(`handlerLambda: ${handlerLambda}`);
+
+        const gpsIotRuleName = `${prefix_upper}IotRule`
+        const glueDatabaseName = `${prefix_upper}DataCatalog`
+        const glutDataCatalogueName = `${prefix_lower}_data_catalog`
+        const glueCrawlerName = `DynamoDB${prefix}Crawler`
+
+        console.log(`gpsIotRuleName: ${gpsIotRuleName}`);
+        console.log(`glueDatabaseName: ${glueDatabaseName}`);
+        console.log(`glutDataCatalogueName: ${glutDataCatalogueName}`);
+        console.log(`glueCrawlerName: ${glueCrawlerName}`);
+
+        const dynamoDBTableName = `${prefix_camel}DataTable`
+
+        console.log(`dynamoDBTableName: ${dynamoDBTableName}`);
 
     // Create the DynamoDB Table (GpsDataTable)
-        const gpsDataTable = new dynamodb.Table(scope, DynamoDBTableName, {
-          tableName: DynamoDBTableName,
+        const gpsDataTable = new dynamodb.Table(scope, dynamoDBTableName, {
+          tableName: dynamoDBTableName,
           partitionKey: { name: 'Topic', type: dynamodb.AttributeType.STRING }, // Partition key (Topic)
           sortKey: { name: 'Timestamp', type: dynamodb.AttributeType.STRING },  // Sort key (Timestamp)
           billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, // On-demand billing mode
@@ -33,10 +68,10 @@ export function createIoTECS(
     
     
         // Create Lambda function for processing GPS data (Topic to DynamoDB)
-        const gpsTopicProcessorLambda = new lambda.Function(scope, 'GpsTopicProcessorLambda', {
-          functionName: 'GPSTopicProcessor',
-          code: lambda.Code.fromAsset('lib/lambda'), // Path to your Lambda code directory
-          handler: 'GPSTopicProcessor.lambda_handler', // Assuming your Python file is named GPSTopicProcessor.py with a lambda_handler
+        const topicProcessorLambda = new lambda.Function(scope, topicProcessorLambdaName, {
+          functionName:  topicProcessorFunctionName,
+          code: topicProcessorFunctionCode, // Path to your Lambda code directory
+          handler:  handlerLambda, // Assuming your Python file is named GPSTopicProcessor.py with a lambda_handler
           runtime: lambda.Runtime.PYTHON_3_12,
           role: lambdaDynamoDBAccessRole,
           environment: {
@@ -45,17 +80,17 @@ export function createIoTECS(
         });
     
         // Grant the Lambda function read/write permissions to the DynamoDB table
-        gpsDataTable.grantReadWriteData(gpsTopicProcessorLambda);
+        gpsDataTable.grantReadWriteData(topicProcessorLambda);
     
         // Create the IoT Rule
-        const gpsIotRule = new iot.CfnTopicRule(scope, 'GpsIotRule', {
+        const gpsIotRule = new iot.CfnTopicRule(scope, gpsIotRuleName, {
           topicRulePayload: {
-            description: 'Processes the GPS topic',
-            sql: "SELECT * FROM 'IoT/GPS'", // SQL query to select from 'IoT/GPS'
+            description: `Processes the ${prefix_upper} topic`,
+            sql: `SELECT * FROM 'IoT/${prefix_upper}'`, // SQL query to select from 'IoT/GPS'
             actions: [
               {
                 lambda: {
-                  functionArn: gpsTopicProcessorLambda.functionArn, // Trigger the Lambda function
+                  functionArn: topicProcessorLambda.functionArn, // Trigger the Lambda function
                 },
               },
             ],
@@ -67,10 +102,10 @@ export function createIoTECS(
         gpsIotRule.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     
         // Grant IoT Core permissions to invoke the Lambda function
-        gpsTopicProcessorLambda.grantInvoke(new iam.ServicePrincipal('iot.amazonaws.com'));
+        topicProcessorLambda.grantInvoke(new iam.ServicePrincipal('iot.amazonaws.com'));
     
         // EXPLICIT: Make sure the Lambda function is destroyed with stack
-        gpsTopicProcessorLambda.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
+        topicProcessorLambda.applyRemovalPolicy(cdk.RemovalPolicy.DESTROY);
     
         // ***************** create glue crawlers for Dynamodb
         // Step 1: Create IAM Role for AWS Glue
@@ -98,10 +133,10 @@ export function createIoTECS(
         glueRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'));
     
         // Step 2: Create AWS Glue Database (for storing the metadata from the crawler)
-        const glueDatabase = new CfnDatabase(scope, 'GPSDataCatalog', {
+        const glueDatabase = new CfnDatabase(scope, glueDatabaseName, {
           catalogId: "34234", //this should be scope.account - but it doesn't seem to recognize it - TODO: figure out why
           databaseInput: {
-            name: 'gps_data_catalog',  // Database name in Glue Data Catalog
+            name: glutDataCatalogueName,  // Database name in Glue Data Catalog
           },
         });
     
@@ -109,18 +144,18 @@ export function createIoTECS(
          glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
     
         // Step 8: Create Glue Crawler with conditional reference to the Glue Database
-        const glueCrawler = new CfnCrawler(scope, 'DynamoDBGPSCrawler', {
+        const glueCrawler = new CfnCrawler(scope, glueCrawlerName, {
           role: glueRole.roleArn,   // Attach IAM Role to Glue Crawler
           databaseName: Fn.conditionIf(
             'GlueDatabaseExistsCondition',
             glueDatabase.ref,        // Reference the newly created database (if GlueDatabaseExists = false)
-            'gps_data_catalog'       // Reference the existing database (if GlueDatabaseExists = true)
+            glutDataCatalogueName      // Reference the existing database (if GlueDatabaseExists = true)
           ).toString(),
           name: 'DynamoDBgps',
           targets: {
             dynamoDbTargets: [
               {
-                path: 'GpsDataTable',  // DynamoDB Table Name
+                path: dynamoDBTableName,  // DynamoDB Table Name
               },
             ],
           },
