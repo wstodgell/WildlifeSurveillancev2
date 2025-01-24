@@ -168,7 +168,7 @@ export function createGlueJob(
         //// CREATE the blueJob
         // Now use this bucket in your Glue job creation:
         // Now use this bucket in your Glue job creation:
-        const glueJob = new glue.CfnJob(scope, 'DynamoDBToS3GlueJob', {
+        const glueJob = new glue.CfnJob(scope, `${prefix}DynamoDBToS3GlueJob`, {
           role: glueRole.roleArn,  // The IAM role for the Glue job
           command: {
             name: 'glueetl',  // Specifies it's an ETL job
@@ -195,7 +195,7 @@ export function createGlueJob(
         //******************** ENV */
     
         // Output the Glue Job Name
-        new cdk.CfnOutput(scope, 'GlueJobNameOutput', {
+        new cdk.CfnOutput(scope, `${prefix}GlueJobNameOutput', {
           value: glueJob.ref,
         });
   }
