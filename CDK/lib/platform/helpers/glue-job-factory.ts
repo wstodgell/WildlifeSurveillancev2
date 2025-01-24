@@ -195,7 +195,7 @@ export function createGlueJob(
         //******************** ENV */
     
         // Output the Glue Job Name
-        new cdk.CfnOutput(scope, `${prefix}GlueJobNameOutput', {
+        new cdk.CfnOutput(scope, `${prefix}GlueJobNameOutput`, {
           value: glueJob.ref,
         });
   }
