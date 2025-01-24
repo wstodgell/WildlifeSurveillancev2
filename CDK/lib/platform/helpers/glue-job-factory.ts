@@ -9,6 +9,7 @@ import { CfnCrawler, CfnDatabase } from 'aws-cdk-lib/aws-glue';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { CfnParameter, CfnCondition, Fn } from 'aws-cdk-lib';
 import * as glue from 'aws-cdk-lib/aws-glue';
+import { Stack } from 'aws-cdk-lib';
 
 
 
@@ -21,6 +22,7 @@ export function createGlueJob(
     s3BucketDynamoDbName: string,
     prefix: string
   ) {
+        const stack = Stack.of(scope); // Get the Stack from the scope
         const prefix_lower: string = prefix.toLocaleLowerCase();
         const prefix_upper: string = prefix.toLocaleUpperCase();
         const prefix_camel: string = prefix_lower.charAt(0).toUpperCase() + prefix_lower.slice(1);
@@ -136,7 +138,7 @@ export function createGlueJob(
     
         // Step 2: Create AWS Glue Database (for storing the metadata from the crawler)
         const glueDatabase = new CfnDatabase(scope, glueDatabaseName, {
-          catalogId: "34234", //this should be scope.account - but it doesn't seem to recognize it - TODO: figure out why
+          catalogId: stack.account, //this should be scope.account - but it doesn't seem to recognize it - TODO: figure out why
           databaseInput: {
             name: glutDataCatalogueName,  // Database name in Glue Data Catalog
           },
