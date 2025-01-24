@@ -123,7 +123,7 @@ export function createGlueJob(
         });
     
     
-        const glueRole = new Role(scope, 'GlueDynamoDBRole', {
+        const glueRole = new Role(scope, `${prefix}GlueDynamoDBRole`, {
           assumedBy: new ServicePrincipal('glue.amazonaws.com'),
         });
     
