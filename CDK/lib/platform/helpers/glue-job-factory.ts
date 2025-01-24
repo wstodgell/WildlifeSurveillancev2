@@ -121,6 +121,8 @@ export function createGlueJob(
         const glueDatabaseExistsCondition = new CfnCondition(scope, `${prefix}GlueDatabaseExistsCondition`, {
           expression: Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
         });
+
+        
     
     
         const glueRole = new Role(scope, `${prefix}GlueDynamoDBRole`, {
@@ -147,11 +149,11 @@ export function createGlueJob(
         const glueCrawler = new CfnCrawler(scope, glueCrawlerName, {
           role: glueRole.roleArn,   // Attach IAM Role to Glue Crawler
           databaseName: Fn.conditionIf(
-            'GlueDatabaseExistsCondition',
+            `${prefix}GlueDatabaseExistsCondition`,
             glueDatabase.ref,        // Reference the newly created database (if GlueDatabaseExists = false)
             glutDataCatalogueName      // Reference the existing database (if GlueDatabaseExists = true)
           ).toString(),
-          name: 'DynamoDBgps',
+          name: `DynamoDB${prefix_lower}`,
           targets: {
             dynamoDbTargets: [
               {
