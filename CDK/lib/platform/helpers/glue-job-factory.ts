@@ -111,14 +111,14 @@ export function createGlueJob(
         // Step 1: Create IAM Role for AWS Glue
     
         //if a Glue database already exists, you do not want to create a new one or overwrite the existing one
-        const glueDatabaseExistsParam = new CfnParameter(scope, 'GlueDatabaseExists', {
+        const glueDatabaseExistsParam = new CfnParameter(scope, `${prefix}GlueDatabaseExists`, {
           type: 'String',
           allowedValues: ['true', 'false'],
           default: 'false',
         });
     
         // Condition based on the Glue Database existence
-        const glueDatabaseExistsCondition = new CfnCondition(scope, 'GlueDatabaseExistsCondition', {
+        const glueDatabaseExistsCondition = new CfnCondition(scope, `${prefix}GlueDatabaseExistsCondition`, {
           expression: Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
         });
     
