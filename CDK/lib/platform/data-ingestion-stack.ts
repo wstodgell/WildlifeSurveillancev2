@@ -130,9 +130,12 @@ export class DataIngestionStack extends cdk.Stack {
     //******************* ENV */
 
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'env')
+    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'gps')
 
+    
     //********************** GPS */
     // Create the DynamoDB Table (GpsDataTable)
+    /*
     const gpsDataTable = new dynamodb.Table(this, 'GpsDataTable', {
       tableName: 'GpsDataTable',
       partitionKey: { name: 'Topic', type: dynamodb.AttributeType.STRING }, // Partition key (Topic)
@@ -186,7 +189,7 @@ export class DataIngestionStack extends cdk.Stack {
     // Step 1: Create IAM Role for AWS Glue
 
     //if a Glue database already exists, you do not want to create a new one or overwrite the existing one
-    const glueDatabaseExistsParam = new CfnParameter(this, 'GlueDatabaseExists', {
+    const glueDatabaseExistsParam = new CfnParameter(this, 'GlobalGlueDatabaseExists', {
       type: 'String',
       allowedValues: ['true', 'false'],
       default: 'false',
@@ -263,12 +266,13 @@ export class DataIngestionStack extends cdk.Stack {
       timeout: 20,  // Job timeout in minutes
     });
 
-    //******************** ENV */
+    //******************** ENV 
 
     // Output the Glue Job Name
     new cdk.CfnOutput(this, 'GlueJobNameOutput', {
       value: glueJob.ref,
     });
+    */
 
   }
 }
