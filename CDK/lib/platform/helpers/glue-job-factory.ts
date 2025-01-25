@@ -124,6 +124,9 @@ export function createGlueJob(
           expression: Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
         });
 
+        console.log(`Parameter created: ${prefix}GlueDatabaseExists`);
+        console.log(`Condition created: ${prefix}GlueDatabaseExistsCondition`);
+
         
     
     
