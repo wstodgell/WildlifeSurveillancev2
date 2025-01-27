@@ -1,0 +1,34 @@
+prefix_lower: env
+prefix_upper: ENV
+prefix_camel: Env
+etlScriptBucketName: etl-scripts-471112702347-DataIngestionStack
+glueTempBucketName: glue-temp-471112702347-DataIngestionStack
+s3BucketDynamoDbName: dynamo-to-s3-471112702347-DataIngestionStack
+topicProcessorLambdaName: ENVTopicProcessorLambda
+topicProcessorFunctionName: ENVTopicProcessor
+topicProcessorFunctionCode: [object Object]
+handlerLambda: ENVTopicProcessor.lambda_handler
+gpsIotRuleName: ENVIotRule
+glueDatabaseName: ENVDataCatalog
+glutDataCatalogueName: env_data_catalog
+glueCrawlerName: DynamoDBenvCrawler
+dynamoDBTableName: EnvDataTable
+Parameter created: envGlueDatabaseExists
+Condition created: envGlueDatabaseExistsCondition
+prefix_lower: gps
+prefix_upper: GPS
+prefix_camel: Gps
+etlScriptBucketName: etl-scripts-471112702347-DataIngestionStack
+glueTempBucketName: glue-temp-471112702347-DataIngestionStack
+s3BucketDynamoDbName: dynamo-to-s3-471112702347-DataIngestionStack
+topicProcessorLambdaName: GPSTopicProcessorLambda
+topicProcessorFunctionName: GPSTopicProcessor
+topicProcessorFunctionCode: [object Object]
+handlerLambda: GPSTopicProcessor.lambda_handler
+gpsIotRuleName: GPSIotRule
+glueDatabaseName: GPSDataCatalog
+glutDataCatalogueName: gps_data_catalog
+glueCrawlerName: DynamoDBgpsCrawler
+dynamoDBTableName: GpsDataTable
+Parameter created: gpsGlueDatabaseExists
+Condition created: gpsGlueDatabaseExistsCondition

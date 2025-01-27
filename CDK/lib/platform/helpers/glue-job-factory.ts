@@ -120,8 +120,11 @@ export function createGlueJob(
         });
     
         // Condition based on the Glue Database existence
+        // Scope (usually a stack or construct) is where condition is defined(stored)
+        // id (the second parameter) - unique identier (name of variable) in this date it's prefixGloueDatabaseExistsCondition
+        // Fn.conditionEquals - if glueDatabaseExistsParam = false (if it evalues to true, true is returned)
         const glueDatabaseExistsCondition = new CfnCondition(scope, `${prefix}GlueDatabaseExistsCondition`, {
-          expression: Fn.conditionEquals(glueDatabaseExistsParam.valueAsString, 'false'),
+          expression: Fn.conditionEquals(glueDatabaseExistsParam, 'false'),
         });
 
         console.log(`Parameter created: ${prefix}GlueDatabaseExists`);
@@ -147,14 +150,15 @@ export function createGlueJob(
           },
         });
     
-         // Apply condition so the Glue Database is only created if it doesn't already exist
-         glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
+         // Apply condition so the Glue Database is ONLY CREATED IF it doesn't already exist
+        glueDatabase.cfnOptions.condition = glueDatabaseExistsCondition;
     
         // Step 8: Create Glue Crawler with conditional reference to the Glue Database
+        //condition works like this condition ? valueIfTrue : valueIfFalse
         const glueCrawler = new CfnCrawler(scope, glueCrawlerName, {
           role: glueRole.roleArn,   // Attach IAM Role to Glue Crawler
           databaseName: Fn.conditionIf(
-            `${prefix}GlueDatabaseExistsCondition`,
+            glueDatabaseExistsCondition.logicalId, // Pass the logical ID of the condition
             glueDatabase.ref,        // Reference the newly created database (if GlueDatabaseExists = false)
             glutDataCatalogueName      // Reference the existing database (if GlueDatabaseExists = true)
           ).toString(),

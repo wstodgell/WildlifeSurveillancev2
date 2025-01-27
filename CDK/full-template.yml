@@ -1,0 +1,950 @@
+prefix_lower: env
+prefix_upper: ENV
+prefix_camel: Env
+etlScriptBucketName: etl-scripts-471112702347-DataIngestionStack
+glueTempBucketName: glue-temp-471112702347-DataIngestionStack
+s3BucketDynamoDbName: dynamo-to-s3-471112702347-DataIngestionStack
+topicProcessorLambdaName: ENVTopicProcessorLambda
+topicProcessorFunctionName: ENVTopicProcessor
+topicProcessorFunctionCode: [object Object]
+handlerLambda: ENVTopicProcessor.lambda_handler
+gpsIotRuleName: ENVIotRule
+glueDatabaseName: ENVDataCatalog
+glutDataCatalogueName: env_data_catalog
+glueCrawlerName: DynamoDBenvCrawler
+dynamoDBTableName: EnvDataTable
+Parameter created: envGlueDatabaseExists
+Condition created: envGlueDatabaseExistsCondition
+prefix_lower: gps
+prefix_upper: GPS
+prefix_camel: Gps
+etlScriptBucketName: etl-scripts-471112702347-DataIngestionStack
+glueTempBucketName: glue-temp-471112702347-DataIngestionStack
+s3BucketDynamoDbName: dynamo-to-s3-471112702347-DataIngestionStack
+topicProcessorLambdaName: GPSTopicProcessorLambda
+topicProcessorFunctionName: GPSTopicProcessor
+topicProcessorFunctionCode: [object Object]
+handlerLambda: GPSTopicProcessor.lambda_handler
+gpsIotRuleName: GPSIotRule
+glueDatabaseName: GPSDataCatalog
+glutDataCatalogueName: gps_data_catalog
+glueCrawlerName: DynamoDBgpsCrawler
+dynamoDBTableName: GpsDataTable
+Parameter created: gpsGlueDatabaseExists
+Condition created: gpsGlueDatabaseExistsCondition
+Resources:
+  GlueTempBucketC3E33D26:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: glue-temp-471112702347-dataingestionstack
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+        - Key: aws-cdk:cr-owned:tmp/:dd9a8336
+          Value: "true"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GlueTempBucket/Resource
+  GlueTempBucketPolicyB106AE44:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: GlueTempBucketC3E33D26
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+              - s3:PutBucketPolicy
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - GlueTempBucketC3E33D26
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - GlueTempBucketC3E33D26
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GlueTempBucket/Policy/Resource
+  GlueTempBucketAutoDeleteObjectsCustomResource15B49619:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: GlueTempBucketC3E33D26
+    DependsOn:
+      - GlueTempBucketPolicyB106AE44
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GlueTempBucket/AutoDeleteObjectsCustomResource/Default
+  CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: DataIngestionStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role
+  CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip
+      Timeout: 900
+      MemorySize: 128
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+          - Arn
+      Runtime: nodejs20.x
+      Description:
+        Fn::Join:
+          - ""
+          - - "Lambda function for auto-deleting objects in "
+            - Ref: GlueTempBucketC3E33D26
+            - " S3 bucket."
+    DependsOn:
+      - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+    Metadata:
+      aws:cdk:path: DataIngestionStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler
+      aws:asset:path: asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6
+      aws:asset:property: Code
+  DeployEmptyFileToTmpAwsCliLayer50146BF5:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: 3322b7049fb0ed2b7cbb644a2ada8d1116ff80c32dca89e6ada846b5de26f961.zip
+      Description: /opt/awscli/aws
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DeployEmptyFileToTmp/AwsCliLayer/Resource
+      aws:asset:path: asset.3322b7049fb0ed2b7cbb644a2ada8d1116ff80c32dca89e6ada846b5de26f961.zip
+      aws:asset:is-bundled: false
+      aws:asset:property: Content
+  DeployEmptyFileToTmpCustomResource5731397B:
+    Type: Custom::CDKBucketDeployment
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536
+          - Arn
+      SourceBucketNames:
+        - cdk-hnb659fds-assets-471112702347-us-east-1
+      SourceObjectKeys:
+        - dda65232f9c3f261b8140532791b371dfe1c13a26282d3e6036ec8c0920602a5.zip
+      SourceMarkers:
+        - {}
+      DestinationBucketName:
+        Ref: GlueTempBucketC3E33D26
+      DestinationBucketKeyPrefix: tmp/
+      Prune: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DeployEmptyFileToTmp/CustomResource/Default
+  CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: DataIngestionStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/Resource
+  CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+            Effect: Allow
+            Resource:
+              - arn:aws:s3:::cdk-hnb659fds-assets-471112702347-us-east-1
+              - arn:aws:s3:::cdk-hnb659fds-assets-471112702347-us-east-1/*
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - ETLScriptBucket30DBD12F
+                  - Arn
+              - Fn::GetAtt:
+                  - GlueTempBucketC3E33D26
+                  - Arn
+              - Fn::GetAtt:
+                  - dynamotos37E85E203
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ETLScriptBucket30DBD12F
+                        - Arn
+                    - /*
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - GlueTempBucketC3E33D26
+                        - Arn
+                    - /*
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - dynamotos37E85E203
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+      PolicyName: CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF
+      Roles:
+        - Ref: CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265
+    Metadata:
+      aws:cdk:path: DataIngestionStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource
+  CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: 0158f40002a8c211635388a87874fd4dcc3d68f525fe08a0fe0f014069ae539c.zip
+      Environment:
+        Variables:
+          AWS_CA_BUNDLE: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+      Handler: index.handler
+      Layers:
+        - Ref: DeployEmptyFileToTmpAwsCliLayer50146BF5
+      Role:
+        Fn::GetAtt:
+          - CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265
+          - Arn
+      Runtime: python3.11
+      Timeout: 900
+    DependsOn:
+      - CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF
+      - CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265
+    Metadata:
+      aws:cdk:path: DataIngestionStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource
+      aws:asset:path: asset.0158f40002a8c211635388a87874fd4dcc3d68f525fe08a0fe0f014069ae539c
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+  athenaResults0FCA1DE2:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: athenaresults-471112702347-dataingestionstack
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/athenaResults/Resource
+  athenaResultsPolicyB27E1C44:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: athenaResults0FCA1DE2
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+              - s3:PutBucketPolicy
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - athenaResults0FCA1DE2
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - athenaResults0FCA1DE2
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: DataIngestionStack/athenaResults/Policy/Resource
+  athenaResultsAutoDeleteObjectsCustomResourceA0620734:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: athenaResults0FCA1DE2
+    DependsOn:
+      - athenaResultsPolicyB27E1C44
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/athenaResults/AutoDeleteObjectsCustomResource/Default
+  MyAthenaWorkgroup:
+    Type: AWS::Athena::WorkGroup
+    Properties:
+      Name: MyWorkgroup
+      State: ENABLED
+      WorkGroupConfiguration:
+        ResultConfiguration:
+          OutputLocation:
+            Fn::Join:
+              - ""
+              - - s3://
+                - Ref: athenaResults0FCA1DE2
+                - /
+    Metadata:
+      aws:cdk:path: DataIngestionStack/MyAthenaWorkgroup
+  dynamotos37E85E203:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: dynamo-to-s3-471112702347-dataingestionstack
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+        - Key: aws-cdk:cr-owned:gps_data/:239ffa13
+          Value: "true"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/dynamo-to-s3/Resource
+  dynamotos3PolicyF8E90364:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: dynamotos37E85E203
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+              - s3:PutBucketPolicy
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - dynamotos37E85E203
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - dynamotos37E85E203
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: DataIngestionStack/dynamo-to-s3/Policy/Resource
+  dynamotos3AutoDeleteObjectsCustomResource72D7F8B1:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: dynamotos37E85E203
+    DependsOn:
+      - dynamotos3PolicyF8E90364
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/dynamo-to-s3/AutoDeleteObjectsCustomResource/Default
+  DeployEmptyGpsDataAwsCliLayer9A0B1EAC:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: 3322b7049fb0ed2b7cbb644a2ada8d1116ff80c32dca89e6ada846b5de26f961.zip
+      Description: /opt/awscli/aws
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DeployEmptyGpsData/AwsCliLayer/Resource
+      aws:asset:path: asset.3322b7049fb0ed2b7cbb644a2ada8d1116ff80c32dca89e6ada846b5de26f961.zip
+      aws:asset:is-bundled: false
+      aws:asset:property: Content
+  DeployEmptyGpsDataCustomResource1AD6290C:
+    Type: Custom::CDKBucketDeployment
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536
+          - Arn
+      SourceBucketNames:
+        - cdk-hnb659fds-assets-471112702347-us-east-1
+      SourceObjectKeys:
+        - dda65232f9c3f261b8140532791b371dfe1c13a26282d3e6036ec8c0920602a5.zip
+      SourceMarkers:
+        - {}
+      DestinationBucketName:
+        Ref: dynamotos37E85E203
+      DestinationBucketKeyPrefix: gps_data/
+      Prune: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DeployEmptyGpsData/CustomResource/Default
+  ETLScriptBucket30DBD12F:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: etl-scripts-471112702347-dataingestionstack
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+        - Key: aws-cdk:cr-owned:scripts/:d1e8039f
+          Value: "true"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ETLScriptBucket/Resource
+  ETLScriptBucketPolicyE8F35A03:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: ETLScriptBucket30DBD12F
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+              - s3:PutBucketPolicy
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - ETLScriptBucket30DBD12F
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - ETLScriptBucket30DBD12F
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ETLScriptBucket/Policy/Resource
+  ETLScriptBucketAutoDeleteObjectsCustomResource6F05FE7F:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: ETLScriptBucket30DBD12F
+    DependsOn:
+      - ETLScriptBucketPolicyE8F35A03
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ETLScriptBucket/AutoDeleteObjectsCustomResource/Default
+  DeployETLScriptsAwsCliLayer720CD35B:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: 3322b7049fb0ed2b7cbb644a2ada8d1116ff80c32dca89e6ada846b5de26f961.zip
+      Description: /opt/awscli/aws
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DeployETLScripts/AwsCliLayer/Resource
+      aws:asset:path: asset.3322b7049fb0ed2b7cbb644a2ada8d1116ff80c32dca89e6ada846b5de26f961.zip
+      aws:asset:is-bundled: false
+      aws:asset:property: Content
+  DeployETLScriptsCustomResourceEC48C533:
+    Type: Custom::CDKBucketDeployment
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536
+          - Arn
+      SourceBucketNames:
+        - cdk-hnb659fds-assets-471112702347-us-east-1
+      SourceObjectKeys:
+        - a41072c2f71a4367869cacef746959c9fb254338e7bdf6b74bf4b9decb29a384.zip
+      DestinationBucketName:
+        Ref: ETLScriptBucket30DBD12F
+      DestinationBucketKeyPrefix: scripts/
+      Prune: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DeployETLScripts/CustomResource/Default
+  LambdaDynamoDBAccessRoleD9A7E0BC:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Description: Role for Lambda to access DynamoDB and CloudWatch
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonDynamoDBFullAccess
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/CloudWatchFullAccess
+      RoleName: LambdaDynamoDBAccessRole
+    Metadata:
+      aws:cdk:path: DataIngestionStack/LambdaDynamoDBAccessRole/Resource
+  LambdaDynamoDBAccessRoleDefaultPolicyDE770C21:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+              - dynamodb:ConditionCheckItem
+              - dynamodb:DeleteItem
+              - dynamodb:DescribeTable
+              - dynamodb:GetItem
+              - dynamodb:GetRecords
+              - dynamodb:GetShardIterator
+              - dynamodb:PutItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - EnvDataTable23B2730E
+                  - Arn
+              - Fn::GetAtt:
+                  - GpsDataTable89D3FF34
+                  - Arn
+              - Ref: AWS::NoValue
+        Version: "2012-10-17"
+      PolicyName: LambdaDynamoDBAccessRoleDefaultPolicyDE770C21
+      Roles:
+        - Ref: LambdaDynamoDBAccessRoleD9A7E0BC
+    Metadata:
+      aws:cdk:path: DataIngestionStack/LambdaDynamoDBAccessRole/DefaultPolicy/Resource
+  EnvDataTable23B2730E:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: Topic
+          AttributeType: S
+        - AttributeName: Timestamp
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: Topic
+          KeyType: HASH
+        - AttributeName: Timestamp
+          KeyType: RANGE
+      TableName: EnvDataTable
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/EnvDataTable/Resource
+  ENVTopicProcessorLambda7CD8934B:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: 239d52b22e664bd4c7dbeb0b22ee02a23b2a62d4396122abf8463ae2af0dace1.zip
+      Environment:
+        Variables:
+          GpsDataTable:
+            Ref: EnvDataTable23B2730E
+      FunctionName: ENVTopicProcessor
+      Handler: ENVTopicProcessor.lambda_handler
+      Role:
+        Fn::GetAtt:
+          - LambdaDynamoDBAccessRoleD9A7E0BC
+          - Arn
+      Runtime: python3.12
+    DependsOn:
+      - LambdaDynamoDBAccessRoleDefaultPolicyDE770C21
+      - LambdaDynamoDBAccessRoleD9A7E0BC
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ENVTopicProcessorLambda/Resource
+      aws:asset:path: asset.239d52b22e664bd4c7dbeb0b22ee02a23b2a62d4396122abf8463ae2af0dace1
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+  ENVTopicProcessorLambdaInvokeX1kgdpeq4A1b3T4Qgx5teuCJ9kkxQXuTuwWc9FHExDE6845FD86:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - ENVTopicProcessorLambda7CD8934B
+          - Arn
+      Principal: iot.amazonaws.com
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ENVTopicProcessorLambda/InvokeX1kgdpeq4A1b3T4Qgx5teuCJ9kkxQXuTuwWc9FHExDE=
+  ENVIotRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - Lambda:
+              FunctionArn:
+                Fn::GetAtt:
+                  - ENVTopicProcessorLambda7CD8934B
+                  - Arn
+        Description: Processes the ENV topic
+        RuleDisabled: false
+        Sql: SELECT * FROM 'IoT/ENV'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ENVIotRule
+  envGlueDynamoDBRoleD5488B63:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSGlueServiceRole
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonDynamoDBReadOnlyAccess
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonS3FullAccess
+    Metadata:
+      aws:cdk:path: DataIngestionStack/envGlueDynamoDBRole/Resource
+  ENVDataCatalog:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: "471112702347"
+      DatabaseInput:
+        Name: env_data_catalog
+    Metadata:
+      aws:cdk:path: DataIngestionStack/ENVDataCatalog
+    Condition: envGlueDatabaseExistsCondition
+  DynamoDBenvCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      DatabaseName:
+        Fn::If:
+          - envGlueDatabaseExistsCondition
+          - Ref: ENVDataCatalog
+          - env_data_catalog
+      Name: DynamoDBenv
+      Role:
+        Fn::GetAtt:
+          - envGlueDynamoDBRoleD5488B63
+          - Arn
+      Schedule:
+        ScheduleExpression: cron(0 12 * * ? *)
+      TablePrefix: ""
+      Targets:
+        DynamoDBTargets:
+          - Path: EnvDataTable
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DynamoDBenvCrawler
+  envDynamoDBToS3GlueJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        PythonVersion: "3"
+        ScriptLocation: s3://etl-scripts-471112702347-DataIngestionStack/scripts/etl_GPStoDb.py
+      DefaultArguments:
+        --job-language: python
+        --TempDir: s3://glue-temp-471112702347-DataIngestionStack/tmp/
+        --enable-metrics: ""
+        --enable-continuous-cloudwatch-log: "true"
+        --s3_output_path: s3://dynamo-to-s3-471112702347-DataIngestionStack/gps_data/
+        --extra-py-files: ""
+        --Dlog4j2.formatMsgNoLookups: "true"
+      GlueVersion: "3.0"
+      MaxRetries: 3
+      NumberOfWorkers: 2
+      Role:
+        Fn::GetAtt:
+          - envGlueDynamoDBRoleD5488B63
+          - Arn
+      Timeout: 20
+      WorkerType: G.1X
+    Metadata:
+      aws:cdk:path: DataIngestionStack/envDynamoDBToS3GlueJob
+  GpsDataTable89D3FF34:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: Topic
+          AttributeType: S
+        - AttributeName: Timestamp
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: Topic
+          KeyType: HASH
+        - AttributeName: Timestamp
+          KeyType: RANGE
+      TableName: GpsDataTable
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GpsDataTable/Resource
+  GPSTopicProcessorLambda3B461E17:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-471112702347-us-east-1
+        S3Key: 239d52b22e664bd4c7dbeb0b22ee02a23b2a62d4396122abf8463ae2af0dace1.zip
+      Environment:
+        Variables:
+          GpsDataTable:
+            Ref: GpsDataTable89D3FF34
+      FunctionName: GPSTopicProcessor
+      Handler: GPSTopicProcessor.lambda_handler
+      Role:
+        Fn::GetAtt:
+          - LambdaDynamoDBAccessRoleD9A7E0BC
+          - Arn
+      Runtime: python3.12
+    DependsOn:
+      - LambdaDynamoDBAccessRoleDefaultPolicyDE770C21
+      - LambdaDynamoDBAccessRoleD9A7E0BC
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GPSTopicProcessorLambda/Resource
+      aws:asset:path: asset.239d52b22e664bd4c7dbeb0b22ee02a23b2a62d4396122abf8463ae2af0dace1
+      aws:asset:is-bundled: false
+      aws:asset:property: Code
+  GPSTopicProcessorLambdaInvokeX1kgdpeq4A1b3T4Qgx5teuCJ9kkxQXuTuwWc9FHExDE524A5CC8:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - GPSTopicProcessorLambda3B461E17
+          - Arn
+      Principal: iot.amazonaws.com
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GPSTopicProcessorLambda/InvokeX1kgdpeq4A1b3T4Qgx5teuCJ9kkxQXuTuwWc9FHExDE=
+  GPSIotRule:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - Lambda:
+              FunctionArn:
+                Fn::GetAtt:
+                  - GPSTopicProcessorLambda3B461E17
+                  - Arn
+        Description: Processes the GPS topic
+        RuleDisabled: false
+        Sql: SELECT * FROM 'IoT/GPS'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GPSIotRule
+  gpsGlueDynamoDBRole5D33A3BA:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSGlueServiceRole
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonDynamoDBReadOnlyAccess
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonS3FullAccess
+    Metadata:
+      aws:cdk:path: DataIngestionStack/gpsGlueDynamoDBRole/Resource
+  GPSDataCatalog:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: "471112702347"
+      DatabaseInput:
+        Name: gps_data_catalog
+    Metadata:
+      aws:cdk:path: DataIngestionStack/GPSDataCatalog
+    Condition: gpsGlueDatabaseExistsCondition
+  DynamoDBgpsCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      DatabaseName:
+        Fn::If:
+          - gpsGlueDatabaseExistsCondition
+          - Ref: GPSDataCatalog
+          - gps_data_catalog
+      Name: DynamoDBgps
+      Role:
+        Fn::GetAtt:
+          - gpsGlueDynamoDBRole5D33A3BA
+          - Arn
+      Schedule:
+        ScheduleExpression: cron(0 12 * * ? *)
+      TablePrefix: ""
+      Targets:
+        DynamoDBTargets:
+          - Path: GpsDataTable
+    Metadata:
+      aws:cdk:path: DataIngestionStack/DynamoDBgpsCrawler
+  gpsDynamoDBToS3GlueJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        PythonVersion: "3"
+        ScriptLocation: s3://etl-scripts-471112702347-DataIngestionStack/scripts/etl_GPStoDb.py
+      DefaultArguments:
+        --job-language: python
+        --TempDir: s3://glue-temp-471112702347-DataIngestionStack/tmp/
+        --enable-metrics: ""
+        --enable-continuous-cloudwatch-log: "true"
+        --s3_output_path: s3://dynamo-to-s3-471112702347-DataIngestionStack/gps_data/
+        --extra-py-files: ""
+        --Dlog4j2.formatMsgNoLookups: "true"
+      GlueVersion: "3.0"
+      MaxRetries: 3
+      NumberOfWorkers: 2
+      Role:
+        Fn::GetAtt:
+          - gpsGlueDynamoDBRole5D33A3BA
+          - Arn
+      Timeout: 20
+      WorkerType: G.1X
+    Metadata:
+      aws:cdk:path: DataIngestionStack/gpsDynamoDBToS3GlueJob
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/1WRy2rDMBBFvyV7Rc2D0m4ThxZKocYJ7dKMpbGrWJaMRooxxv9eZIckXd0zL3G52vD18ytfLaCjpZD1UquCD0cPombQUT7Qlg/7IGr0LCnNlWZJrVaiv7ev9VzsgXBktM0Hia22fYPG83l0uDUYEKEnvosyMg1NIYEPSWk+oUf3jY6UNeyoTKXRW/MWjPCxc4OkNI+comsUxaORKWj4kFmNcTDp3fBMIwP/iwZ4Upof6+p3Z0PLZG+gsbLgwwmK+XqCkSnr4+rJtkpkQSOrdMDJ7gE8FEDTcuKg0+gifthiHFkSyNsmQ7LBidnNjf+NUmcvSqKL2bEpk6OHSpnqmkyuYyo5dCS04ruOEq2moNjj41/Bt2H6rRQcNOhnL4k1UvkpGWMl8jM9XTYrvn7hq8WZlFq6YLxqkGez/gGRoko7GQIAAA==
+    Metadata:
+      aws:cdk:path: DataIngestionStack/CDKMetadata/Default
+Outputs:
+  AthenaResultsBucketNameOutput:
+    Value:
+      Ref: athenaResults0FCA1DE2
+  DynamoDbBucketNameOutput:
+    Value:
+      Ref: dynamotos37E85E203
+  ETLScriptBucketNameOutput:
+    Value:
+      Ref: ETLScriptBucket30DBD12F
+  GlueTempBucketNameOutput:
+    Value:
+      Ref: GlueTempBucketC3E33D26
+  envGlueJobNameOutput:
+    Value:
+      Ref: envDynamoDBToS3GlueJob
+  gpsGlueJobNameOutput:
+    Value:
+      Ref: gpsDynamoDBToS3GlueJob
+Parameters:
+  envGlueDatabaseExists:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  gpsGlueDatabaseExists:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Conditions:
+  envGlueDatabaseExistsCondition:
+    Fn::Equals:
+      - envGlueDatabaseExistsCondition
+      - "false"
+  gpsGlueDatabaseExistsCondition:
+    Fn::Equals:
+      - gpsGlueDatabaseExistsCondition
+      - "false"
+
