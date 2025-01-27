@@ -12,7 +12,7 @@ import * as athena from 'aws-cdk-lib/aws-athena';
 import * as glue from 'aws-cdk-lib/aws-glue';
 import * as s3Deployment from 'aws-cdk-lib/aws-s3-deployment'; // Import S3 Deployment
 import { createGlueJob } from './helpers/glue-job-factory'; // Import the factory function
-import { checkFileExists } from './helpers/check-glue'; // Import the factory function
+//import { checkFileExists } from './helpers/check-glue'; // Import the factory function
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {

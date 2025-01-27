@@ -1,4 +1,4 @@
-import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
+/*import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
 
 export async function checkFileExists(
   bucketName: string,
@@ -24,4 +24,4 @@ export async function checkFileExists(
       throw error;
     }
   }
-}
+}*/
