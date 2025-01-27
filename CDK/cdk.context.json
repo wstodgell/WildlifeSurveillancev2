@@ -22,5 +22,14 @@
     "us-east-1d",
     "us-east-1e",
     "us-east-1f"
+  ],
+  "availability-zones:account=654654393882:region=us-east-1": [
+    "us-east-1a",
+    "us-east-1b",
+    "us-east-1c",
+    "us-east-1d",
+    "us-east-1e",
+    "us-east-1f",
+    "us-east-1-dfw-2a"
   ]
 }
