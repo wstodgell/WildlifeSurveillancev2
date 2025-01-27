@@ -12,6 +12,7 @@ import * as athena from 'aws-cdk-lib/aws-athena';
 import * as glue from 'aws-cdk-lib/aws-glue';
 import * as s3Deployment from 'aws-cdk-lib/aws-s3-deployment'; // Import S3 Deployment
 import { createGlueJob } from './helpers/glue-job-factory'; // Import the factory function
+import { checkFileExists } from './helpers/check-glue'; // Import the factory function
 
 export class DataIngestionStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -77,11 +78,11 @@ export class DataIngestionStack extends cdk.Stack {
 
     //************ Create bucket for ETL scripts for Glue JObs */
     // Create a unique S3 bucket name for storing Glue ETL scripts
-    const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`;
+    const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`.toLocaleLowerCase();
 
     // Create a bucket to store Glue ETL scripts
     const etlScriptBucket = new s3.Bucket(this, 'ETLScriptBucket', {
-      bucketName: etlScriptBucketName.toLowerCase(),  // S3 bucket names must be lowercase
+      bucketName: etlScriptBucketName,  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,  // Bucket will be deleted with the stack
       autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
     });
@@ -129,8 +130,20 @@ export class DataIngestionStack extends cdk.Stack {
 
     //******************* ENV */
 
+    (async () => {
+      const filePath = 'scripts/etl_GPStoDb.py';
+      const region = 'us-east-1'; // Replace with your region
+    
+      const fileExists = await checkFileExists(etlScriptBucketName, filePath, region);
+    
+      if (!fileExists) {
+        throw new Error(`File does not exist: s3://${etlScriptBucketName}/${filePath}`);
+      }
+    
+      // Now, call createGlueJob only if the file exists
+      createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'gps');
+    })();
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'env')
-    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'gps')
 
     
     //********************** GPS */

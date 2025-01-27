@@ -10,7 +10,7 @@ import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { CfnParameter, CfnCondition, Fn } from 'aws-cdk-lib';
 import * as glue from 'aws-cdk-lib/aws-glue';
 import { Stack } from 'aws-cdk-lib';
-
+import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3';
 
 
 
@@ -175,7 +175,7 @@ export function createGlueJob(
           },
           tablePrefix: '',  // Prefix for tables created by the Crawler
         });
-     
+
         //// CREATE the blueJob
         // Now use this bucket in your Glue job creation:
         // Now use this bucket in your Glue job creation:
