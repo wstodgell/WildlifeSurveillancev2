@@ -80,7 +80,7 @@ jobs:
       - name: Deply Data Ingestion Stack
         run: |
           cd CDK
-          npx cdk deploy DataIngestionStack --require-approval never --parameters GlueDatabaseExists=true
+          npx cdk deploy DataIngestionStack --require-approval never
 
       # Step to get the outputs of the CDK stack
       - name: Get CDK Stack Outputs
