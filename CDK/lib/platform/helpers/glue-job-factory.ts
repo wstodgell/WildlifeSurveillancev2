@@ -195,7 +195,7 @@ export function createGlueJob(
             '--extra-py-files': '',  // If additional Python dependencies are needed
             '--Dlog4j2.formatMsgNoLookups': 'true',  // Disable Log4j lookups for security
           },
-          maxRetries: 3,  // Retry the job 3 times if it fails
+          maxRetries: 0,  // Retry the job 3 times if it fails
           glueVersion: '3.0',  // Glue version
           numberOfWorkers: 2,  // Number of workers (adjust as needed)
           workerType: 'G.1X',  // Worker type
