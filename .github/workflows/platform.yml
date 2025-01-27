@@ -52,6 +52,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd CDK
+          npm install @aws-sdk/client-s3
           npm ci
 
       - name: Clean CDK Context
