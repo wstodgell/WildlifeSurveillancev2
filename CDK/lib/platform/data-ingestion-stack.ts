@@ -129,7 +129,7 @@ export class DataIngestionStack extends cdk.Stack {
     });
 
     //******************* ENV */
-
+    /*
     (async () => {
       const filePath = 'scripts/etl_GPStoDb.py';
       const region = 'us-east-1'; // Replace with your region
@@ -140,9 +140,9 @@ export class DataIngestionStack extends cdk.Stack {
         throw new Error(`File does not exist: s3://${etlScriptBucketName}/${filePath}`);
       }
     
-      // Now, call createGlueJob only if the file exists
-      createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'gps');
-    })();
+      // Now, call createGlueJob only if the file exists */
+    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'gps');
+    //})();
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'env')
 
     
