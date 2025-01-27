@@ -192,8 +192,8 @@ export function createGlueJob(
             '--enable-metrics': '',  // Enables metrics tracking
             '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
             '--s3_output_path': `s3://${s3BucketDynamoDbName}/gps_data/`,  // Pass the S3 bucket path to your Glue job
-            '--extra-py-files': '',  // If additional Python dependencies are needed
             '--Dlog4j2.formatMsgNoLookups': 'true',  // Disable Log4j lookups for security
+            '--JOB_NAME': stack.stackName,  // Pass the job name dynamically
           },
           maxRetries: 0,  // Retry the job 3 times if it fails
           glueVersion: '3.0',  // Glue version
@@ -201,6 +201,8 @@ export function createGlueJob(
           workerType: 'G.1X',  // Worker type
           timeout: 20,  // Job timeout in minutes
         });
+
+        
 
     
         //******************** ENV */
