@@ -19,10 +19,10 @@ export class DataIngestionStack extends cdk.Stack {
     super(scope, id, props);
 
     // Create a dedicated temporary S3 bucket for Glue job
-    const glueTempS3BucketName = `glue-temp-${this.account}-${this.stackName}`;
+    const glueTempS3BucketName = `glue-temp-${this.account}-${this.stackName}`.toLowerCase();
 
     const glueTempBucket = new s3.Bucket(this, 'GlueTempBucket', {
-      bucketName: glueTempS3BucketName.toLowerCase(),
+      bucketName: glueTempS3BucketName,
       removalPolicy: cdk.RemovalPolicy.DESTROY,  // Automatically delete the bucket with the stack
       autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
     });
@@ -60,25 +60,28 @@ export class DataIngestionStack extends cdk.Stack {
 
     // ********* athena GPS dynamoDB Bucket data
     //Glue job outputs data filese into from DynamoDB to S3 bucket
-    const dynamoDbS3ResultsBucketName = `dynamo-to-s3-${this.account}-${this.stackName}`;
+    const dynamoDbS3ResultsBucketName = `dynamo-to-s3-${this.account}-${this.stackName}`.toLowerCase();
 
     //Glue job outputs data filese into from DynamoDB to S3 bucket
     const s3BucketDynamoDb = new s3.Bucket(this, 'dynamo-to-s3', {
-      bucketName: dynamoDbS3ResultsBucketName.toLowerCase(),  // S3 bucket names must be lowercase
+      bucketName: dynamoDbS3ResultsBucketName,  // S3 bucket names must be lowercase
       removalPolicy: cdk.RemovalPolicy.DESTROY,    // Bucket will be deleted with the stack
       autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
     });
 
-    // Deploy an empty file to the /tmp/ folder to simulate its existence
-    new s3Deployment.BucketDeployment(this, 'DeployEmptyGpsData', {
+    // Deploy all "folders" in a single deployment block
+    new s3Deployment.BucketDeployment(this, 'DeployFolders', {
       destinationBucket: s3BucketDynamoDb,
-      destinationKeyPrefix: 'gps_data/', // This ensures the file goes into the /tmp/ "folder"
-      sources: [s3Deployment.Source.data('empty-file.txt', '')], // Deploy an empty file
+      sources: [
+        s3Deployment.Source.data('gps_data/', ''), // Create the "gps_data/" folder
+        s3Deployment.Source.data('env_data/', ''), // Create the "env_data/" folder
+        s3Deployment.Source.data('cam_data/', ''), // Create the "cam_data/" folder
+      ],
     });
 
     //************ Create bucket for ETL scripts for Glue JObs */
     // Create a unique S3 bucket name for storing Glue ETL scripts
-    const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`.toLocaleLowerCase();
+    const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`.toLowerCase();
 
     // Create a bucket to store Glue ETL scripts
     const etlScriptBucket = new s3.Bucket(this, 'ETLScriptBucket', {

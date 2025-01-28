@@ -24,7 +24,10 @@ dynamo_frame = glueContext.create_dynamic_frame.from_options(
 
 # Step 3: Combine all data into a single JSON file and write it to S3
 s3_output_path = args['s3_output_path']  # Use the passed S3 output path
-dynamo_frame.toDF().coalesce(1).write.mode('overwrite').json(s3_output_path)
+# Convert the AWS Glue DynamicFrame to a Spark DataFrame, reduce the output to a single partition 
+# (so the result is written as a single JSON file), and append the new data to the existing files 
+# in the specified S3 path without overwriting any existing data.
+dynamo_frame.toDF().coalesce(1).write.mode('append').json(s3_output_path)
 
 # Step 4: Commit the job to signal completion
 job.commit()

@@ -191,9 +191,9 @@ export function createGlueJob(
             '--TempDir': `s3://${glueTempBucketName}/tmp/`,  // Correct temporary directory
             '--enable-metrics': '',  // Enables metrics tracking
             '--enable-continuous-cloudwatch-log': 'true',  // Logs to CloudWatch
-            '--s3_output_path': `s3://${s3BucketDynamoDbName}/gps_data/`,  // Pass the S3 bucket path to your Glue job
+            '--s3_output_path': `s3://${s3BucketDynamoDbName}/${prefix_lower}_data/`,  // Pass the S3 bucket path to your Glue job
             '--Dlog4j2.formatMsgNoLookups': 'true',  // Disable Log4j lookups for security
-            '--JOB_NAME': stack.stackName,  // Pass the job name dynamically
+            '--JOB_NAME': `${prefix}DnyamoDb-to-JSON`,  // Pass the job name dynamically
           },
           maxRetries: 0,  // Retry the job 3 times if it fails
           glueVersion: '3.0',  // Glue version
