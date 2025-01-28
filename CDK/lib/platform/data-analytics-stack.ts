@@ -9,7 +9,7 @@ export class DataAnalyticsStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const bucketName = cdk.Fn.importValue('DynamoDbBucketNameOutput');
+    const bucketName = cdk.Fn.importValue('DynamoDbBucketName'); // Use the exportName from DataIngestionStack
 
     const s3OutputBucket = s3.Bucket.fromBucketName(this, 'OutputBucket', bucketName);
 

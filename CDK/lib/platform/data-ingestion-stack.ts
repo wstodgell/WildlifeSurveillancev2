@@ -96,6 +96,7 @@ export class DataIngestionStack extends cdk.Stack {
     // Output the DynamoDbBucketName Parquet files are put here from Glue Job
     new cdk.CfnOutput(this, 'DynamoDbBucketNameOutput', {
       value: s3BucketDynamoDb.bucketName,
+      exportName: 'DynamoDbBucketName',
     });
 
     // Output the bucket name
