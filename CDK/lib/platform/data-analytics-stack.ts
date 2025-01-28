@@ -9,8 +9,10 @@ export class DataAnalyticsStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // Reference the S3 bucket where Glue Job writes its output
-    const s3OutputBucket = s3.Bucket.fromBucketName(this, 'OutputBucket', 'DynamoDbBucketNameOutput');
+    const bucketName = cdk.Fn.importValue('DynamoDbBucketNameOutput');
+
+    const s3OutputBucket = s3.Bucket.fromBucketName(this, 'OutputBucket', bucketName);
+
 
     // IAM Role for Glue Crawler
     const glueCrawlerRole = new iam.Role(this, 'GlueCrawlerRole', {
