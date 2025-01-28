@@ -130,9 +130,6 @@ export function createGlueJob(
         console.log(`Parameter created: ${prefix}GlueDatabaseExists`);
         console.log(`Condition created: ${prefix}GlueDatabaseExistsCondition`);
 
-        
-    
-    
         const glueRole = new Role(scope, `${prefix}GlueDynamoDBRole`, {
           assumedBy: new ServicePrincipal('glue.amazonaws.com'),
         });

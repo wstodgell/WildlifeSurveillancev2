@@ -69,16 +69,6 @@ export class DataIngestionStack extends cdk.Stack {
       autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
     });
 
-    // Deploy all "folders" in a single deployment block
-    new s3Deployment.BucketDeployment(this, 'DeployFolders', {
-      destinationBucket: s3BucketDynamoDb,
-      sources: [
-        s3Deployment.Source.data('gps_data/', ''), // Create the "gps_data/" folder
-        s3Deployment.Source.data('env_data/', ''), // Create the "env_data/" folder
-        s3Deployment.Source.data('cam_data/', ''), // Create the "cam_data/" folder
-      ],
-    });
-
     //************ Create bucket for ETL scripts for Glue JObs */
     // Create a unique S3 bucket name for storing Glue ETL scripts
     const etlScriptBucketName = `etl-scripts-${this.account}-${this.stackName}`.toLowerCase();
