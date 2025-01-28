@@ -8,6 +8,7 @@ import { DataIngestionStack } from '../lib/platform/data-ingestion-stack';
 import { FileGatewayStack } from '../lib/platform/file-gateway-stack';
 import { ClinicIngestionStack } from '../lib/platform/clinic-ingestion-stack';
 import { ConfigurationStack } from '../lib/configuration-stack';
+import { DataAnalyticsStack } from '../lib/platform/data-analytics-stack';
 
 
 const app = new cdk.App();
@@ -37,6 +38,11 @@ new DataIngestionStack(app, 'DataIngestionStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
 
+new DataAnalyticsStack(app, 'DataAnalyticsStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
+
+/*
 new ClinicIngestionStack(app, 'ClinicIngestionStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
@@ -44,3 +50,4 @@ new ClinicIngestionStack(app, 'ClinicIngestionStack', {
 new FileGatewayStack(app, 'FileGatewayStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
+*/

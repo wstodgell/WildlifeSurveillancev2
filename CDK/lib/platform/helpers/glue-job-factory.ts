@@ -20,6 +20,7 @@ export function createGlueJob(
     etlScriptBucketName: string,
     glueTempBucketName: string,
     s3BucketDynamoDbName: string,
+    scriptName: string,
     prefix: string
   ) {
         const stack = Stack.of(scope); // Get the Stack from the scope
@@ -180,7 +181,7 @@ export function createGlueJob(
           role: glueRole.roleArn,  // The IAM role for the Glue job
           command: {
             name: 'glueetl',  // Specifies it's an ETL job
-            scriptLocation: `s3://${etlScriptBucketName}/scripts/etl_GPStoDb.py`,  // Path to the script in the S3 bucket
+            scriptLocation: `s3://${etlScriptBucketName}/scripts/${scriptName}`,  // Path to the script in the S3 bucket
             pythonVersion: '3',  // Python 3 for the Glue job
           },
           defaultArguments: {
