@@ -31,19 +31,21 @@ export class DataAnalyticsStack extends Stack {
       },
     });
 
-    // Glue Crawler
     new glue.CfnCrawler(this, 'GlueS3Crawler', {
-      role: glueCrawlerRole.roleArn,
-      databaseName: glueDatabase.ref,
-      targets: {
-        s3Targets: [
-          {
-            path: `s3://${s3OutputBucket.bucketName}/`,
-          },
-        ],
-      },
-      name: 'S3ResultsCrawler',
-      tablePrefix: 'processed_', // Optional table prefix
-    });
+        role: glueCrawlerRole.roleArn,
+        databaseName: glueDatabase.ref,
+        targets: {
+          s3Targets: [
+            {
+              path: `s3://${s3OutputBucket.bucketName}/gps_data/`, // Point to the gps_data folder
+            },
+            {
+              path: `s3://${s3OutputBucket.bucketName}/env_data/`, // Point to the env_data folder
+            },
+          ],
+        },
+        name: 'S3ResultsCrawler',
+        tablePrefix: 'processed_', // Optional table prefix
+      });
   }
 }
