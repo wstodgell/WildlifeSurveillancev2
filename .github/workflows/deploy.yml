@@ -169,6 +169,21 @@ jobs:
           docker build -t ${{ env.ENV_ECR_URI }}:latest -f IoTMockSensors/IoT_Env/Dockerfile IoTMockSensors/IoT_Env
           docker push ${{ env.ENV_ECR_URI }}:latest
 
+        # Log in to the Amazon GPS ECR registry
+      - name: Log in to Amazon HEA ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.HEA_ECR_URI }}
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Build and push the Docker image to ECR
+      # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
+      # we broaden the scope to.
+      - name: Build and Push *HEA* Docker Image
+        run: |
+          docker build -t ${{ env.HEA_ECR_URI }}:latest -f IoTMockSensors/IoT_Hea/Dockerfile IoTMockSensors/IoT_Hea
+          docker push ${{ env.HEA_ECR_URI }}:latest
+
       # Log in to the Amazon TEST ECR registry
       - name: Log in to Amazon TEST ECR
         run: |
