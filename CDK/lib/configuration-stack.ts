@@ -17,7 +17,7 @@ export class ConfigurationStack extends cdk.Stack {
       stringValue: 'IoT/ENV',
     });
 
-    const HEATopicParameter = new ssm.StringParameter(this, 'ENVTopicParameter', {
+    const HEATopicParameter = new ssm.StringParameter(this, 'HEATopicParameter', {
       parameterName: '/iot-topics/hea-topic-name',
       stringValue: 'IoT/HEA',
     });
