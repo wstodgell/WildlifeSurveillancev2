@@ -25,7 +25,9 @@ export class EcsStack extends cdk.Stack {
 
     // Import the ECR repository URIs created in the EcrStack - required for containers to get the images
     const GPSEcrRepositoryUri = cdk.Fn.importValue('GPSEcrRepositoryUri');
-    const ENVEcrRepositoryUri = cdk.Fn.importValue('ENVEcrRepositoryUri')
+    const ENVEcrRepositoryUri = cdk.Fn.importValue('ENVEcrRepositoryUri');
+    const HEAEcrRepositoryUri = cdk.Fn.importValue('ENVEcrRepositoryUri');
+
     const TestEcrRepositoryUri = cdk.Fn.importValue('TestEcrRepositoryUri');
 
     // Import the ECS task execution role created in EcrStack - required so Fargate can access
@@ -137,6 +139,16 @@ export class EcsStack extends cdk.Stack {
       value: ENVFargateService.serviceName,
       description: 'Name of the ENV ECS Fargate Service',
       exportName: 'ENVFargateServiceName'
+    });
+
+    
+    const HEAFargateService = createIoTECS(this, 'HEA', 'HEAThingSecret', 'IoT/HEAThing/certs', 'HEATaskRole', 
+      ecsTaskExecutionRole, HEAEcrRepositoryUri, cluster)
+    
+    new cdk.CfnOutput(this, 'HEAFargateServiceName', {
+      value: HEAFargateService.serviceName,
+      description: 'Name of the HEA ECS Fargate Service',
+      exportName: 'HEAFargateServiceName'
     });
 
 

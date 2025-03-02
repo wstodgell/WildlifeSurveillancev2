@@ -123,6 +123,7 @@ export class DataIngestionStack extends cdk.Stack {
     });
     
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_GPStoDb.py', 'gps');
-    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_ENVtoDb.py', 'env')
+    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_ENVtoDb.py', 'env');
+    createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_HEAtoDb.py', 'hea');
   }
 }

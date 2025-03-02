@@ -19,7 +19,7 @@ export function createIoTECS(
     //Creates a new CloudWatch Log Group in AWS.  LogGroup = container for storing logs
     //This = ECS Stack
     //ECSLogGroup (identifier)
-    const logGroup = new logs.LogGroup(scope, 'EcsENVLogGroup', {
+    const logGroup = new logs.LogGroup(scope, `Ecs${ecsPrefix}LogGroup`, {
       logGroupName: `/ecs/IoT-${ecsPrefix}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // Ensure logs are cleaned up with stack removal
       retention: logs.RetentionDays.ONE_WEEK,   // Adjust retention period as needed

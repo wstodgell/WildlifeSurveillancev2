@@ -9,6 +9,7 @@ export class EcrStack extends cdk.Stack {
   public readonly TestEcrRepositoryUri: string;
   public readonly GPSEcrRepositoryUri: string;
   public readonly EnvEcrRepositoryUri: string;
+  public readonly HeaEcrRepositoryUri: string;
   
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -31,10 +32,18 @@ export class EcrStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    const HeaRepository = new ecr.Repository(this, 'MyIotHeaAppRepository', {
+      repositoryName: common.ECR_REPO_HEA,
+      emptyOnDelete: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     // store the repository - property of cdk.Stack URI is typically: aws_account_id.dkr.ecr.region.amazonaws.com/repository_name
     this.GPSEcrRepositoryUri = GPSRepository.repositoryUri;
 
     this.EnvEcrRepositoryUri = EnvRepository.repositoryUri;
+
+    this.HeaEcrRepositoryUri = HeaRepository.repositoryUri;
 
     // store the repository - property of cdk.Stack URI is typically: aws_account_id.dkr.ecr.region.amazonaws.com/repository_name
     this.TestEcrRepositoryUri = TestRepository.repositoryUri;
@@ -47,6 +56,12 @@ export class EcrStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'ENVEcrRepositoryUri', {
+      value: this.EnvEcrRepositoryUri,
+      description: 'URI of the Env ECR repository',
+      exportName: 'ENVEcrRepositoryUri'
+    });
+
+    new cdk.CfnOutput(this, 'HEAEcrRepositoryUri', {
       value: this.EnvEcrRepositoryUri,
       description: 'URI of the Env ECR repository',
       exportName: 'ENVEcrRepositoryUri'

@@ -5,6 +5,7 @@ export var ECR_REPO_TEST = 'my-iot-test-app'
 
 export var ECR_REPO_GPS = 'my-iot-gps-app'
 export var ECR_REPO_ENV = 'my-iot-env-app'
+export var ECR_REPO_HEA = 'my-iot-hea-app'
 
 
 
