@@ -62,8 +62,8 @@ export class EcrStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'HEAEcrRepositoryUri', {
-      value: this.EnvEcrRepositoryUri,
-      description: 'URI of the Env ECR repository',
+      value: this.HeaEcrRepositoryUri,
+      description: 'URI of the Hea ECR repository',
       exportName: 'HEAEcrRepositoryUri'
     });
 
