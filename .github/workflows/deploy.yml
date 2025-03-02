@@ -124,6 +124,18 @@ jobs:
       - name: Confirm ENV_ECR URI
         run: echo "ENV_ECR_URI is set to ${{ env.ENV_ECR_URI }}"
 
+      - name: Output HEA_ECR URI
+        id: output-hea-ecr-uri
+        run: |
+          HEA_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='HEAEcrRepositoryUri'].OutputValue" --output text)
+          echo "HEA_ECR_URI=$HEA_ECR_URI"
+          if [ -z "$HEA_ECR_URI" ]; then
+            echo "HEA_ECR_URI is empty!"
+          fi
+          echo "HEA_ECR_URI=$HEA_ECR_URI" >> $GITHUB_ENV
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
       - name: Output TEST_ECR URI
         id: output-test-ecr-uri
         run: |
