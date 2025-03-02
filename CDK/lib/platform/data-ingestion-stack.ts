@@ -34,8 +34,6 @@ export class DataIngestionStack extends cdk.Stack {
       sources: [s3Deployment.Source.data('empty-file.txt', '')], // Deploy an empty file
     });
 
-
-
     // ********* athena results bucket
     // Create a unique S3 bucket name for the bucket that stores athena results
     const athenaResultsS3BucketName = `athenaResults-${this.account}-${this.stackName}`;
