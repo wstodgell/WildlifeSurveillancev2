@@ -1,40 +1,35 @@
+import json
 import random
-import math
+import time
 
-# Constants for environment simulation
-NUM_SENSORS = 10  # Adjust the number of sensors as needed
-RADIUS = 0.1  # Diameter for sensor coverage in degrees, approx 5 km
+# Constants
+NUM_ELKS = 8  # Number of elk being tracked
 
-# Initialize sensor positions with random starting points
-sensor_positions = []
-for _ in range(NUM_SENSORS):
-    start_lat, start_lon = 53.0, -127.0  # Central starting point for the sensors
-    angle = random.uniform(0, 2 * math.pi)
-    distance = random.uniform(0, RADIUS)
-    delta_lat = distance * math.cos(angle) / 111  # Convert degrees to approximate km
-    delta_lon = distance * math.sin(angle) / (111 * math.cos(math.radians(start_lat)))
-    sensor_positions.append([start_lat + delta_lat, start_lon + delta_lon])
+# Function to generate health data for elk
+def generate_elk_health_data():
+    elk_health_data = []
+    
+    for elk_id in range(1, NUM_ELKS + 1):
+        elk_data = {
+            "elk_id": elk_id,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "body_temperature": round(random.uniform(36.5, 39.5), 1),  # Normal: 37.0 - 39.0°C
+            "heart_rate": random.randint(30, 50),  # Normal: 30 - 45 BPM
+            "respiration_rate": random.randint(10, 35),  # Normal: 10 - 30 breaths per min
+            "activity_level": round(random.uniform(0, 1), 2),  # 0 (resting) to 1 (high movement)
+            "posture": random.choice(["Standing", "Lying Down", "On Side"]),
+            "hydration_level": round(random.uniform(50, 100), 1),  # Percentage
+            "stress_level": round(random.uniform(0, 10), 2),  # 0 (calm) to 10 (high stress)
+        }
+        elk_health_data.append(elk_data)
+    
+    return elk_health_data
 
-def get_wind_direction(base_direction="East"):
-    variability = 10  # The wind can vary by +/- 10 degrees
-    direction_change = random.uniform(-variability, variability)
-    directions = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"]
-    base_index = directions.index(base_direction)
-    num_directions = len(directions)
-    new_index = (base_index + int(direction_change // (360 / num_directions))) % num_directions
-    return directions[new_index]
+# Generate sample data
+health_data = generate_elk_health_data()
 
-def update_environment_data():
-    environment_data = []
-    for lat, lon in sensor_positions:
-        temperature = random.uniform(-5, 30)  # Temperature in Celsius
-        humidity = random.uniform(20, 100)  # Humidity in percentage
-        wind_direction = get_wind_direction()  # Get dynamic wind direction
-        environment_data.append({
-            "latitude": lat,
-            "longitude": lon,
-            "temperature": temperature,
-            "humidity": humidity,
-            "wind_direction": wind_direction
-        })
-    return environment_data
+# Save to JSON file
+with open("elk_health_data.json", "w") as json_file:
+    json.dump(health_data, json_file, indent=4)
+
+print("Elk health data saved to elk_health_data.json")
