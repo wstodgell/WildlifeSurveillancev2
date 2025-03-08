@@ -29,11 +29,15 @@ def create_topic(payload):
     transformed_payload = [
         {
             "sensor_id": sensor_id,
-            "lat": item['latitude'],
-            "lon": item['longitude'],
-            "temperature": item['temperature'],
-            "humidity": item['humidity'],
-            "wind_direction": item['wind_direction']
+            "elk_id": item['elk_id'],
+            "timestamp": item['timestamp'],
+            "body_temperature": item['body_temperature'],
+            "heart_rate": item['heart_rate'],
+            "respiration_rate": item['respiration_rate'],
+            "activity_level": item['activity_level'],
+            "posture": item['posture'],
+            "hydration_level": item['hydration_level'],
+            "stress_level": item['stress_level']
         }
         for sensor_id, item in enumerate(payload)
     ]
@@ -43,3 +47,4 @@ def create_topic(payload):
         "timestamp": time.time(),
         "payload": transformed_payload
     }
+
