@@ -3,7 +3,7 @@ import logging
 import time
 from datetime import datetime
 from setup_mqtt import mqtt_connect, log_to_cloudwatch
-from hea_logic import update_environment_data 
+from hea_logic import generate_health_data 
 import configuration
 from colorama import Fore, Style, init
 import traceback
@@ -19,7 +19,7 @@ def log_error_with_traceback(e):
 def publish_message(mqtt_client):
   try:
     print(f"{Fore.YELLOW}Attempting to Publish Message{Style.RESET_ALL}")
-    env_data = update_environment_data()  # Get environment data
+    env_data = generate_health_data()  # Get environment data
     print(f"DEBUG: Environment data generated: {env_data}")  # Debug log
 
     # Verify the data structure of env_data

@@ -6,7 +6,7 @@ import time
 NUM_ELKS = 8  # Number of elk being tracked
 
 # Function to generate health data for elk
-def generate_elk_health_data():
+def generate_health_data():
     elk_health_data = []
     
     for elk_id in range(1, NUM_ELKS + 1):
@@ -26,7 +26,7 @@ def generate_elk_health_data():
     return elk_health_data
 
 # Generate sample data
-health_data = generate_elk_health_data()
+health_data = generate_health_data()
 
 # Save to JSON file
 with open("elk_health_data.json", "w") as json_file:
