@@ -145,7 +145,8 @@ export class DataIngestionStack extends cdk.Stack {
       const unzipLambda = new lambda.Function(this, 'UnzipLambda', {
         runtime: lambda.Runtime.PYTHON_3_9,
         handler: 'unzip_and_store.lambda_handler',
-        code: lambda.Code.fromAsset('lambda'),
+        code: lambda.Code.fromAsset('lib/platform/lambdas'),
+
       });
     
       rawUploadsBucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3n.LambdaDestination(unzipLambda));
