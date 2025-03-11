@@ -60,16 +60,15 @@ export function createGlueJob(
 
         console.log(`dynamoDBTableName: ${dynamoDBTableName}`);
 
-    // Create the DynamoDB Table (GpsDataTable)
-        const gpsDataTable = new dynamodb.Table(scope, dynamoDBTableName, {
+        // Create the DynamoDB Table (GpsDataTable)
+        const dnyamoDataTable = new dynamodb.Table(scope, dynamoDBTableName, {
           tableName: dynamoDBTableName,
-          partitionKey: { name: 'Topic', type: dynamodb.AttributeType.STRING }, // Partition key (Topic)
-          sortKey: { name: 'Timestamp', type: dynamodb.AttributeType.STRING },  // Sort key (Timestamp)
-          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, // On-demand billing mode
+          partitionKey: { name: 'SensorId', type: dynamodb.AttributeType.STRING }, // Change to SensorId
+          sortKey: { name: 'Timestamp', type: dynamodb.AttributeType.STRING },  // Keeps Timestamp for ordering
+          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, // On-demand billing
           removalPolicy: cdk.RemovalPolicy.DESTROY, // Automatically delete the table when the stack is destroyed
         });
-    
-    
+      
         // Create Lambda function for processing GPS data (Topic to DynamoDB)
         const topicProcessorLambda = new lambda.Function(scope, topicProcessorLambdaName, {
           functionName:  topicProcessorFunctionName,
@@ -78,12 +77,12 @@ export function createGlueJob(
           runtime: lambda.Runtime.PYTHON_3_12,
           role: lambdaDynamoDBAccessRole,
           environment: {
-            GpsDataTable: gpsDataTable.tableName, // Pass the table name to the Lambda function's environment variables
+            GpsDataTable: dnyamoDataTable.tableName, // Pass the table name to the Lambda function's environment variables
           },
         });
     
         // Grant the Lambda function read/write permissions to the DynamoDB table
-        gpsDataTable.grantReadWriteData(topicProcessorLambda);
+        dnyamoDataTable.grantReadWriteData(topicProcessorLambda);
     
         // Create the IoT Rule
         const gpsIotRule = new iot.CfnTopicRule(scope, gpsIotRuleName, {

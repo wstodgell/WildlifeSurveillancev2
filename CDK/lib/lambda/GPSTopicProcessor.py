@@ -14,7 +14,8 @@ def lambda_handler(event, context):
     # Safely access 'payload' and 'topic' from the event (since IoT Core sends data inside 'payload')
     payload = event.get('payload', [])  # Extract GPS data list from 'payload'
     topic = event.get('topic', 'unknown_topic')  # Extract 'topic'
-    
+    timestamp = datetime.utcnow().isoformat()
+
     # Check if payload contains GPS data
     if payload:
         try:
@@ -33,12 +34,12 @@ def lambda_handler(event, context):
                     Item={
                         'ElkId': str(elk_id),  # Store elk_id as string
                         'Topic': topic,
-                        'Timestamp': datetime.utcnow().isoformat(),
+                        'Timestamp': str(timestamp),
                         'Latitude': lat,
                         'Longitude': lon
                     }
                 )
-                print(f"Stored GPS data for ElkId {elk_id} in topic {topic}")
+                print(f"✅ ElkId {elk_id} GPS data written to DynamoDB (from IoT Topic: {topic})")
 
         except Exception as e:
             print(f"Error storing data in DynamoDB: {str(e)}")

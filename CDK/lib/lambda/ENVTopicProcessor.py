@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     # Safely access 'payload' and 'topic' from the event (since IoT Core sends data inside 'payload')
     payload = event.get('payload', [])  # Extract ENV data list from 'payload'
     topic = event.get('topic', 'unknown_topic')  # Extract 'topic'
-    
+    timestamp = datetime.utcnow().isoformat()
     # Check if payload contains ENV data
     if payload:
         try:
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
                     Item={
                         'SensorId': str(sensor_id),  # Store sensor_id as string
                         'Topic': topic,
-                        'Timestamp': datetime.utcnow().isoformat(),
+                        'Timestamp': str(timestamp),
                         'Latitude': lat,
                         'Longitude': lon,
                         'Temperature': temperature,
@@ -46,7 +46,8 @@ def lambda_handler(event, context):
                         'WindDirection': wind_direction
                     }
                 )
-                print(f"Stored ENV data for SensorId {sensor_id} in topic {topic}")
+                print(f"✅ SensorId {sensor_id} data written to DynamoDB (from IoT Topic: {topic})")
+
 
         except Exception as e:
             print(f"Error storing data in DynamoDB: {str(e)}")

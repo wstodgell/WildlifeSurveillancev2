@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                         'StressLevel': stress_level
                     }
                 )
-                print(f"✅ Stored elk health data for ElkId {elk_id} in topic {topic}")
+                print(f"✅ ElkId {elk_id} health data written to DynamoDB (from IoT Topic: {topic})")
 
         except Exception as e:
             print(f"Error storing data in DynamoDB: {traceback.format_exc()}")  # Full error traceback
