@@ -24,6 +24,15 @@ def setup_config():
     print(f"{Fore.RED}*******************Retrieved {GPS_TOPIC_NAME}{Style.RESET_ALL}")
 
 
+def get_fresh_publish_interval():
+    try:
+        ssm = boto3.client('ssm')
+        response = ssm.get_parameter(Name='/iot-settings/gps-publish-interval', WithDecryption=False)
+        return int(response['Parameter']['Value'])
+    except Exception as e:
+        print(f"⚠️ Failed to fetch publish interval, using default: {e}")
+        return 15  # Fallback default
+
 def create_topic(payload):
   transformed_payload = [
     {"elk_id": elk_id, "lat": lat, "lon": lon}

@@ -18,7 +18,7 @@ def log_error_with_traceback(e):
 
 def publish_message(mqtt_client):
   try:
-    print(f"{Fore.YELLOW}Attempting to Publish Message{Style.RESET_ALL}")
+    print(f"Attempting to Publish Message")
     env_data = update_environment_data()  # Get environment data
     print(f"DEBUG: Environment data generated: {env_data}")  # Debug log
 
@@ -34,7 +34,7 @@ def publish_message(mqtt_client):
     else:
       # Ensure the mqtt_client is valid before trying to publish
       if mqtt_client:
-        print(f'Publishing topic: {Fore.GREEN}{configuration.ENV_TOPIC_NAME}{Style.RESET_ALL}')
+        print(f'Publishing topic: {configuration.ENV_TOPIC_NAME}')
         mqtt_client.publish(configuration.ENV_TOPIC_NAME, json.dumps(payload), 1)
         logging.info(f"Published: {json.dumps(payload)} to {configuration.ENV_TOPIC_NAME}")
         log_to_cloudwatch(f"Published: {json.dumps(payload)} to {configuration.ENV_TOPIC_NAME}")
@@ -72,8 +72,11 @@ if __name__ == "__main__":
         while True:
             try:
                 publish_message(mqtt_client)  # Publish message
-                time.sleep(configuration.PUBLISH_INTERVAL)
+                print(f"Publish Interval Value: {configuration.get_fresh_publish_interval()}")
+                time.sleep(configuration.get_fresh_publish_interval())
             except Exception as e:
                 logging.error(f"Error during message publish: {e}. Retrying connection...")
                 log_to_cloudwatch(f"Error during message publish: {e}. Retrying connection...")
                 mqtt_client = attempt_preamble_setup()  # Retry connection if message publish fails
+
+

@@ -23,12 +23,16 @@ def setup_config():
     ENV_TOPIC_NAME = response['Parameter']['Value']
     print(f"{Fore.RED}*******************Retrieved {ENV_TOPIC_NAME}{Style.RESET_ALL}")
 
-def get_publish_interval():
-    ssm = boto3.client('ssm')
-    response = ssm.get_parameter(Name='/iot-settings/env-publish-interval', WithDecryption=False)
-    return int(response['Parameter']['Value'])
+def get_fresh_publish_interval():
+    try:
+        ssm = boto3.client('ssm')
+        response = ssm.get_parameter(Name='/iot-settings/env-publish-interval', WithDecryption=False)
+        return int(response['Parameter']['Value'])
+    except Exception as e:
+        print(f"⚠️ Failed to fetch publish interval, using default: {e}")
+        return 15  # Fallback default
 
-PUBLISH_INTERVAL = get_publish_interval()
+
 
 def create_topic(payload):
     transformed_payload = [

@@ -71,7 +71,8 @@ if __name__ == "__main__":
         while True:
             try:
                 publish_message(mqtt_client)  # Publish message
-                time.sleep(15)  # Wait 15 seconds before next message
+                print(f"Publish Interval Value: {configuration.get_fresh_publish_interval()}")
+                time.sleep(configuration.get_fresh_publish_interval())
             except Exception as e:
                 logging.error(f"Error during message publish: {e}. Retrying connection...")
                 log_to_cloudwatch(f"Error during message publish: {e}. Retrying connection...")

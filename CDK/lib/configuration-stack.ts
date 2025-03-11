@@ -27,7 +27,17 @@ export class ConfigurationStack extends cdk.Stack {
     // **New Parameter: Publish Interval**
     const ENVPollingIntervalParameter = new ssm.StringParameter(this, 'ENVPollingIntervalParameter', {
       parameterName: '/iot-settings/env-publish-interval',
-      stringValue: '15', // Default to 15 seconds
+      stringValue: '120', // Default to 15 seconds
+    });
+
+    const HEAPollingIntervalParameter = new ssm.StringParameter(this, 'HEAPollingIntervalParameter', {
+      parameterName: '/iot-settings/hea-publish-interval',
+      stringValue: '120', // Default to 15 seconds
+    });
+
+    const GPSPollingIntervalParameter = new ssm.StringParameter(this, 'GPSPollingIntervalParameter', {
+      parameterName: '/iot-settings/gps-publish-interval',
+      stringValue: '120', // Default to 15 seconds
     });
   }
 }
