@@ -12,6 +12,7 @@ import * as athena from 'aws-cdk-lib/aws-athena';
 import * as glue from 'aws-cdk-lib/aws-glue';
 import * as s3Deployment from 'aws-cdk-lib/aws-s3-deployment'; // Import S3 Deployment
 import { createGlueJob } from './helpers/glue-job-factory'; // Import the factory function
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 //import { checkFileExists } from './helpers/check-glue'; // Import the factory function
 
 export class DataIngestionStack extends cdk.Stack {
@@ -123,5 +124,31 @@ export class DataIngestionStack extends cdk.Stack {
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_GPStoDb.py', 'gps');
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_ENVtoDb.py', 'env');
     createGlueJob(this, lambdaDynamoDBAccessRole, etlScriptBucketName, glueTempS3BucketName, dynamoDbS3ResultsBucketName, 'etl_HEAtoDb.py', 'hea');
+
+    /* File upload Stack for field workers */
+
+
+      // Bucket for raw ZIP uploads
+      const rawUploadsBucket = new s3.Bucket(this, 'RawUploadsBucket', {
+          bucketName: 'lab-sample-uploads',
+          removalPolicy: cdk.RemovalPolicy.DESTROY,  // Automatically delete the bucket with the stack
+          autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
+      });
+
+      // Bucket for extracted images
+      const processedImagesBucket = new s3.Bucket(this, 'ProcessedImagesBucket', {
+          bucketName: 'lab-processed-images',
+          removalPolicy: cdk.RemovalPolicy.DESTROY,  // Automatically delete the bucket with the stack
+          autoDeleteObjects: true  // Automatically delete objects when the bucket is deleted
+      });
+
+      const unzipLambda = new lambda.Function(this, 'UnzipLambda', {
+        runtime: lambda.Runtime.PYTHON_3_9,
+        handler: 'unzip_and_store.lambda_handler',
+        code: lambda.Code.fromAsset('lambda'),
+      });
+    
+      rawUploadsBucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3n.LambdaDestination(unzipLambda));
+
   }
 }
