@@ -21,5 +21,13 @@ export class ConfigurationStack extends cdk.Stack {
       parameterName: '/iot-topics/hea-topic-name',
       stringValue: 'IoT/HEA',
     });
+
+    //*********** Poling parameters */
+
+    // **New Parameter: Publish Interval**
+    const ENVPollingIntervalParameter = new ssm.StringParameter(this, 'ENVPollingIntervalParameter', {
+      parameterName: '/iot-settings/env-publish-interval',
+      stringValue: '15', // Default to 15 seconds
+    });
   }
 }
