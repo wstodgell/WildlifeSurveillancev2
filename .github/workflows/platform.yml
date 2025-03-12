@@ -88,6 +88,11 @@ jobs:
           cd CDK
           npx cdk deploy DataAnalyticsStack --require-approval never
 
+      - name: Deply Data Auth Stack
+        run: |
+          cd CDK
+          npx cdk deploy AuthStack --require-approval never
+
       # Step to get the outputs of the CDK stack
       - name: Get CDK Stack Outputs
         run: |
