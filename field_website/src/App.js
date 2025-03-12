@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import Login from "./components/Login";
 import FileUpload from "./components/FileUpload";
-import "./App.css"; // Import custom styles
+import { Auth } from "aws-amplify";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
 
   const handleLogin = () => setLoggedIn(true);
-  const handleLogout = () => setLoggedIn(false);
+  const handleLogout = async () => {
+    await Auth.signOut();
+    setLoggedIn(false);
+  };
 
   return (
     <div className="app-container">

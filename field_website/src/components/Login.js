@@ -1,14 +1,17 @@
 import React, { useState } from "react";
+import { Auth } from "aws-amplify";
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    if (username && password) {
-      onLogin();
-    } else {
+  const handleLogin = async () => {
+    try {
+      await Auth.signIn(username, password);
+      onLogin(); // Switch to upload screen
+    } catch (error) {
       alert("Invalid credentials");
+      console.error("Login error:", error);
     }
   };
 
