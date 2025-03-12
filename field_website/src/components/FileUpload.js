@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import AWS from "aws-sdk";
 
-AWS.config.update({
-  accessKeyId: "YOUR_AWS_ACCESS_KEY",
-  secretAccessKey: "YOUR_AWS_SECRET_KEY",
-  region: "us-east-1",
-});
+//AWS.config.update({
+//  accessKeyId: "YOUR_AWS_ACCESS_KEY",
+//  secretAccessKey: "YOUR_AWS_SECRET_KEY",
+//  region: "us-east-1",
+//});
 
 const s3 = new AWS.S3();
 const BUCKET_NAME = "lab-sample-uploads";
