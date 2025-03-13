@@ -112,20 +112,7 @@ export function createGlueJob(
         // ***************** create glue crawlers for Dynamodb
         // Step 1: Create IAM Role for AWS Glue
     
-        //if a Glue database already exists, you do not want to create a new one or overwrite the existing one
-        const glueDatabaseExistsParam = new CfnParameter(scope, `${prefix}GlueDatabaseExists`, {
-          type: 'String',
-          allowedValues: ['true', 'false'],
-          default: 'false',
-        });
-    
-        // Condition based on the Glue Database existence
-        // Scope (usually a stack or construct) is where condition is defined(stored)
-        // id (the second parameter) - unique identier (name of variable) in this date it's prefixGloueDatabaseExistsCondition
-        // Fn.conditionEquals - if glueDatabaseExistsParam = false (if it evalues to true, true is returned)
-        const glueDatabaseExistsCondition = new CfnCondition(scope, `${prefix}GlueDatabaseExistsCondition`, {
-          expression: Fn.conditionEquals(glueDatabaseExistsParam, 'false'),
-        });
+
 
         console.log(`Parameter created: ${prefix}GlueDatabaseExists`);
         console.log(`Condition created: ${prefix}GlueDatabaseExistsCondition`);
