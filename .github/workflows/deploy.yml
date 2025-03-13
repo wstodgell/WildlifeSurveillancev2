@@ -39,7 +39,9 @@ jobs:
       - name: Install dependencies
         run: |
           cd CDK
-          npm ci
+          npm install  # Install dependencies
+          npm install @aws-sdk/client-s3  # Fix missing module
+          npm run build  # Ensure TypeScript is compiled correctly
 
       - name: Synthesize CDK Stack
         run: |
