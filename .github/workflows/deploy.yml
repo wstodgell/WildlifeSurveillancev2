@@ -50,6 +50,11 @@ jobs:
         with:
           node-version: "18"
 
+      - name: 🛠️ Check Installed CDK CLI Version
+        run: |
+          echo "Checking AWS CDK CLI version..."
+          cdk --version || echo "CDK CLI not found!"
+
       - name: Install dependencies
         run: |
           cd CDK
