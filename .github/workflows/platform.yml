@@ -25,9 +25,10 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install AWS CDK CLI (Latest)
+      - name: Force Install Correct AWS CDK CLI
         run: |
-          npm install -g aws-cdk
+          npm uninstall -g aws-cdk
+          npm install -g aws-cdk@latest
           cdk --version  # Verify the installed version
 
       - name: Set up Node.js environment
