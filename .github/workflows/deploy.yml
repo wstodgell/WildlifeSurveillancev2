@@ -26,15 +26,9 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Remove Old AWS CDK CLI (Force)
+      - name: Check AWS CDK CLI Version (Using GitHub’s Preinstalled Version)
         run: |
-          npm uninstall -g aws-cdk || true
-          sudo rm -rf $(which cdk) || true  # Ensures old binary is removed
-
-      - name: Install Latest AWS CDK CLI
-        run: |
-          npm install -g aws-cdk@latest
-          cdk --version  # Verify the installed version
+          cdk --version
 
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
@@ -44,8 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd CDK
-          npm install @aws-sdk/client-s3
-          npm ci
+          npm ci  # Installs dependencies from package-lock.json
 
       - name: Synthesize CDK Stack
         run: |
