@@ -23,9 +23,6 @@ jobs:
       - name: Print current working directory
         run: pwd
 
-      - name: Check AWS CDK Version (DEBUG)
-        run: cdk --version # Verify it's installed correctly
-
         # Set up AWS credentials using GitHub Secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
