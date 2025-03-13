@@ -71,7 +71,7 @@ jobs:
       - name: Synthesize CDK Stack
         run: |
           cd CDK
-          npx cdk synth || echo "Synthesis failed"
+          cdk synth || echo "Synthesis failed"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -84,13 +84,13 @@ jobs:
         run: |
           cd CDK
           echo bootstrapping aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
-          npx cdk bootstrap --force aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          cdk bootstrap --force aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
 
         # Deploy the ECR stack first to create the ECR repository
       - name: Deploy Configuration Stack
         run: |
           cd CDK
-          npx cdk deploy ConfigurationStack --require-approval never
+          cdk deploy ConfigurationStack --require-approval never
 
       # Deploy the ECR stack first to create the ECR repository
       - name: Deploy ECR Stack
