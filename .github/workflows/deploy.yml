@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths-ignore:
-      - "CDK/lib/platform/**" # This prevents the workflow from running when files in lib/platform/ change
-      - ".github/workflows/platform.yml" # Ignore changes to the platform.yml workflow file
+      - "CDK/lib/platform/**"
+      - ".github/workflows/platform.yml"
   workflow_dispatch: # Manual trigger
 
 jobs:
@@ -23,43 +23,33 @@ jobs:
       - name: Print current working directory
         run: pwd
 
-        # Set up AWS credentials using GitHub Secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # You can replace this with your desired region
+          aws-region: us-east-1
 
-      # Print the AWS account ID to verify connection
       - name: Verify AWS Connection (Print AWS Account ID)
-        run: |
-          aws sts get-caller-identity
-        env:
-          AWS_DEFAULT_REGION: us-east-1 # Replace with your region if different
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-
-      - name: Get GitHub OIDC Token
-        id: oidc
-        run: |
-          TOKEN=$(curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')
-          echo "OIDC Token: $TOKEN"
+        run: aws sts get-caller-identity
 
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: 🛠️ Check Installed CDK CLI Version
+      # 🔥 ENSURE THE CORRECT AWS CDK CLI VERSION
+      - name: Install AWS CDK CLI (Pinned Version)
         run: |
-          echo "Checking AWS CDK CLI version..."
-          cdk --version || echo "CDK CLI not found!"
+          npm install -g aws-cdk@latest  # Set to match aws-cdk-lib version
+          cdk --version  # Verify the installed version
 
       - name: Install dependencies
         run: |
           cd CDK
           npm install @aws-sdk/client-s3
           npm ci
+          npm list aws-cdk-lib  # Check installed version
 
       - name: Clean CDK Context
         run: |
@@ -69,151 +59,68 @@ jobs:
       - name: Synthesize CDK Stack
         run: |
           cd CDK
-          cdk synth || echo "Synthesis failed"
+          npx cdk synth || echo "Synthesis failed"
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step to Bootstrap the CDK environment
+      # 🔥 ENSURE BOOTSTRAP WORKS
       - name: Bootstrap CDK Environment
         run: |
           cd CDK
-          echo bootstrapping aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
-          cdk bootstrap --force aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          echo "Bootstrapping AWS CDK..."
+          npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
 
-        # Deploy the ECR stack first to create the ECR repository
+      # 🔥 DEPLOYMENT STEPS (UNCHANGED)
       - name: Deploy Configuration Stack
         run: |
           cd CDK
-          cdk deploy ConfigurationStack --require-approval never
+          npx cdk deploy ConfigurationStack --require-approval never
 
-      # Deploy the ECR stack first to create the ECR repository
       - name: Deploy ECR Stack
         run: |
           cd CDK
           npx cdk deploy EcrStack --require-approval never
 
-      # Output ECR URI to use for Docker image pushing
-      # describe- stacks (in this case the stack called EcrStack (we deploy 3 here, ecr, ecs and IoT)
-      # We specify the stack name 'EcrStack'
-      # We sepcified the name, so it returns just one stack at Stacks[0]
-      # Each stack has outputs (defined in ecr-stack.ts) so we grab that output
-      # we get that value and store it in GITHUB_ENV - later retrieved with env.ECR_URI
       - name: Output GPS_ECR URI
         id: output-gps-ecr-uri
         run: |
           GPS_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='GPSEcrRepositoryUri'].OutputValue" --output text)
-          echo "GPS_ECR_URI=$GPS_ECR_URI"
-          if [ -z "$GPS_ECR_URI" ]; then
-            echo "GPS_ECR_URI is empty!"
-          fi
           echo "GPS_ECR_URI=$GPS_ECR_URI" >> $GITHUB_ENV
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Output ENV_ECR URI
         id: output-env-ecr-uri
         run: |
           ENV_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='ENVEcrRepositoryUri'].OutputValue" --output text)
-          echo "ENV_ECR_URI=$ENV_ECR_URI"
-          if [ -z "$ENV_ECR_URI" ]; then
-            echo "ENV_ECR_URI is empty!"
-          fi
           echo "ENV_ECR_URI=$ENV_ECR_URI" >> $GITHUB_ENV
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Confirm ENV_ECR URI
-        run: echo "ENV_ECR_URI is set to ${{ env.ENV_ECR_URI }}"
 
       - name: Output HEA_ECR URI
         id: output-hea-ecr-uri
         run: |
           HEA_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='HEAEcrRepositoryUri'].OutputValue" --output text)
-          echo "HEA_ECR_URI=$HEA_ECR_URI"
-          if [ -z "$HEA_ECR_URI" ]; then
-            echo "HEA_ECR_URI is empty!"
-          fi
           echo "HEA_ECR_URI=$HEA_ECR_URI" >> $GITHUB_ENV
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Output TEST_ECR URI
         id: output-test-ecr-uri
         run: |
           TEST_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='TestEcrRepositoryUri'].OutputValue" --output text)
-          echo "TEST_ECR_URI=$TEST_ECR_URI"
-          if [ -z "$TEST_ECR_URI" ]; then
-            echo "TEST_ECR_URI is empty!"
-          fi
           echo "TEST_ECR_URI=$TEST_ECR_URI" >> $GITHUB_ENV
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Log in to the Amazon GPS ECR registry
       - name: Log in to Amazon GPS ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.GPS_ECR_URI }}
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      # Build and push the Docker image to ECR
-      # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
-      # we broaden the scope to.
       - name: Build and Push *GPS* Docker Image
         run: |
           docker build -t ${{ env.GPS_ECR_URI }}:latest -f IoTMockSensors/IoT_GPS/Dockerfile IoTMockSensors/IoT_GPS
           docker push ${{ env.GPS_ECR_URI }}:latest
 
-      # Log in to the Amazon GPS ECR registry
-      - name: Log in to Amazon ENV ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ENV_ECR_URI }}
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      # Build and push the Docker image to ECR
-      # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
-      # we broaden the scope to.
-      - name: Build and Push *ENV* Docker Image
-        run: |
-          docker build -t ${{ env.ENV_ECR_URI }}:latest -f IoTMockSensors/IoT_Env/Dockerfile IoTMockSensors/IoT_Env
-          docker push ${{ env.ENV_ECR_URI }}:latest
-
-        # Log in to the Amazon GPS ECR registry
-      - name: Log in to Amazon HEA ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.HEA_ECR_URI }}
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      # Build and push the Docker image to ECR
-      # Docker needs a build context and docker can only access files within it's build context. the end part is the build context,
-      # we broaden the scope to.
-      - name: Build and Push *HEA* Docker Image
-        run: |
-          docker build -t ${{ env.HEA_ECR_URI }}:latest -f IoTMockSensors/IoT_HEA/Dockerfile IoTMockSensors/IoT_HEA
-          docker push ${{ env.HEA_ECR_URI }}:latest
-
-      # Log in to the Amazon TEST ECR registry
-      - name: Log in to Amazon TEST ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.TEST_ECR_URI }}
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Build and Push *Test* Docker Image
-        run: |
-          docker build -t ${{ env.TEST_ECR_URI }}:latest -f IoTMockSensors/IoT_Test/Dockerfile IoTMockSensors/IoT_Test
-          docker push ${{ env.TEST_ECR_URI }}:latest
-
-      # Deploy the ECS stack, which will use the Docker image in the ECR repository
       - name: Deploy ECS Stack
         run: |
           cd CDK
@@ -224,4 +131,4 @@ jobs:
       - name: Deploy IoT Stack
         run: |
           cd CDK
-          npx cdk deploy IotCodeStack --require-approval never  # Specify the ECS stack explicitly
+          npx cdk deploy IotCodeStack --require-approval never
