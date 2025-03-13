@@ -1,12 +1,23 @@
 import React, { useState } from "react";
 import AWS from "aws-sdk";
 
-//AWS.config.update({
-//  accessKeyId: "YOUR_AWS_ACCESS_KEY",
-//  secretAccessKey: "YOUR_AWS_SECRET_KEY",
-//  region: "us-east-1",
-//});
+// Function to determine if running locally
+const isLocal = window.location.hostname === "localhost";
 
+// Configure AWS SDK dynamically
+if (isLocal) {
+  // Running locally: Load credentials from environment variables
+  AWS.config.update({
+    accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
+    region: "us-east-1",
+  });
+} else {
+  // Running in AWS: Use IAM Role (no need to set credentials manually)
+  AWS.config.update({ region: "us-east-1" });
+}
+
+// Create S3 instance
 const s3 = new AWS.S3();
 const BUCKET_NAME = "lab-sample-uploads";
 

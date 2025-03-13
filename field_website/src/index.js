@@ -4,8 +4,8 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Amplify from "aws-amplify";
-import awsconfig from "./aws-exports";
+import { Amplify } from "aws-amplify";
+import awsconfig from "./aws-exports"; // Ensure correct path
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

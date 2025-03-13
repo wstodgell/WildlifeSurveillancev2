@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Auth } from "aws-amplify";
+import { Auth } from "aws-amplify/auth";
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState("");
