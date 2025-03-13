@@ -24,7 +24,8 @@ jobs:
         run: pwd
 
       - name: Install AWS CDK CLI (MATCH LOCAL VERSION)
-        run: npm install -g aws-cdk@2.183.0
+        run: |
+          npm install -g aws-cdk@latest  # Replace with the version from `cdk --version`
 
       - name: Check AWS CDK Version (DEBUG)
         run: cdk --version # Verify it's installed correctly
