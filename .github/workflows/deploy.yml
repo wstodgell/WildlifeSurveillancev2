@@ -47,6 +47,7 @@ jobs:
       - name: Clean CDK Context
         run: |
           cd CDK
+          rm -rf cdk.out
           rm -rf node_modules/.cdk
 
       - name: Synthesize CDK Stack
