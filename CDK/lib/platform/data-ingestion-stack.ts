@@ -20,9 +20,7 @@ export class DataIngestionStack extends cdk.Stack {
     super(scope, id, props);
 
     // Create a dedicated temporary S3 bucket for Glue job
-    const glueTempS3BucketName = `glue-temp-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).stackName}`.toLowerCase();
-
-
+    const glueTempS3BucketName = `glue-temp-${this.account}-${this.stackName}`.toLowerCase();
 
     const glueTempBucket = new s3.Bucket(this, 'GlueTempBucket', {
       bucketName: glueTempS3BucketName,
