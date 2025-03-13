@@ -26,9 +26,10 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Check AWS CDK CLI Version (Using GitHub’s Preinstalled Version)
+      - name: Install AWS CDK CLI (Stable Version)
         run: |
-          cdk --version
+          npm install -g aws-cdk@2.1003.0
+          cdk --version  # Verify installation
 
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
@@ -38,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd CDK
-          npm ci  # Installs dependencies from package-lock.json
+          npm ci
 
       - name: Synthesize CDK Stack
         run: |
