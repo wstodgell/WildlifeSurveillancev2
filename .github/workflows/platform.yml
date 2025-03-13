@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - "CDK/lib/platform/**" # This triggers the workflow only when files in lib/platform/ change
-  workflow_dispatch: # Manual trigger
+      - "CDK/lib/platform/**"
+  workflow_dispatch:
 
 jobs:
   platform-deploy:
@@ -19,30 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Print current working directory
-        run: pwd
-
-        # Set up AWS credentials using GitHub Secrets
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (IAM Role)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # You can replace this with your desired region
-
-      # Print the AWS account ID to verify connection
-      - name: Verify AWS Connection (Print AWS Account ID)
-        run: |
-          aws sts get-caller-identity
-        env:
-          AWS_DEFAULT_REGION: us-east-1 # Replace with your region if different
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-
-      - name: Get GitHub OIDC Token
-        id: oidc
-        run: |
-          TOKEN=$(curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')
-          echo "OIDC Token: $TOKEN"
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
@@ -55,55 +36,40 @@ jobs:
           npm install @aws-sdk/client-s3
           npm ci
 
-      - name: Clean CDK Context
+      - name: Check if CDK is Bootstrapped
         run: |
+          if ! aws cloudformation describe-stacks --stack-name CDKToolkit &> /dev/null; then
+            echo "Bootstrapping CDK..."
+            npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          else
+            echo "CDK already bootstrapped."
+          fi
+
+      - name: Deploy Auth Stack
+        run: |
+          echo "Deploying Auth Stack..."
           cd CDK
-          rm -rf node_modules/.cdk
+          npx cdk deploy AuthStack --require-approval never
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # Step to Bootstrap the CDK environment
-      - name: Bootstrap CDK Environment
+      - name: Deploy Amplify Stack
         run: |
+          echo "Deploying Amplify Stack..."
           cd CDK
-          echo bootstrapping aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
-          npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          npx cdk deploy AmplifyStack --require-approval never
 
-      - name: Synthesize CDK Stack
+      - name: Deploy Data Ingestion Stack
         run: |
-          cd CDK
-          npx cdk synth DataIngestionStack || echo "Synthesis failed"
-
-      - name: Deply Data Ingestion Stack
-        run: |
+          echo "Deploying Data Ingestion Stack..."
           cd CDK
           npx cdk deploy DataIngestionStack --require-approval never
 
-      - name: Deply Data Analytcs Stack
+      - name: Deploy Data Analytics Stack
         run: |
+          echo "Deploying Data Analytics Stack..."
           cd CDK
           npx cdk deploy DataAnalyticsStack --require-approval never
-
-      - name: Deply Data Auth Stack
-        run: |
-          cd CDK
-          npx cdk deploy AuthStack --require-approval never
 
       # Step to get the outputs of the CDK stack
       - name: Get CDK Stack Outputs
         run: |
           aws cloudformation describe-stacks --stack-name DataIngestionStack --query 'Stacks[0].Outputs' --output table
-
-      #- name: Deploy File Gateway Stack
-      #  run: |
-      #    cd CDK
-      #   npx cdk deploy FileGatewayStack --require-approval never
-
-      #- name: Deploy Clinic Ingestion Stack
-      #  run: |
-      #    cd CDK
-      #    npx cdk deploy ClinicIngestionStack --require-approval never

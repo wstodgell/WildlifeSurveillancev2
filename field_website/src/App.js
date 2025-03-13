@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Login from "./components/Login";
 import FileUpload from "./components/FileUpload";
-import { Auth } from "aws-amplify/auth";
+import * as Auth from "@aws-amplify/auth";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);

@@ -10,6 +10,7 @@ import { ClinicIngestionStack } from '../lib/platform/clinic-ingestion-stack';
 import { ConfigurationStack } from '../lib/configuration-stack';
 import { DataAnalyticsStack } from '../lib/platform/data-analytics-stack';
 import { AuthStack } from '../lib/platform/auth-stack';
+import { AmplifyStack } from '../lib/platform/amplify-stack';
 
 const app = new cdk.App();
 
@@ -43,6 +44,10 @@ new DataAnalyticsStack(app, 'DataAnalyticsStack', {
 });
 
 new AuthStack(app, 'AuthStack', {
+  env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+});
+
+new AmplifyStack(app, 'AmplifyStack', {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
 });
 
