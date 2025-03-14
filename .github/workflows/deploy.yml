@@ -42,7 +42,7 @@ jobs:
         run: |
           cd CDK
           npm uninstall -g aws-cdk || true  # Remove any old global CDK versions
-          npm install -g aws-cdk@2.183.0    # Install the exact version that matches aws-cdk-lib
+          npm install -g aws-cdk@latest    # Install the exact version that matches aws-cdk-lib
           npm ci
           npm list aws-cdk-lib              # Check installed aws-cdk-lib version
           cdk --version                     # Verify correct CDK CLI version
