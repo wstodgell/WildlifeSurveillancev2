@@ -30,17 +30,13 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install AWS CDK CLI & Ensure Path
+      - name: Install CDK Dependencies
         run: |
-          echo "Uninstalling existing AWS CDK..."
-          npm uninstall -g aws-cdk || true  # Ensure fresh install
-
-          echo "Installing latest AWS CDK..."
-          npm install -g aws-cdk@latest
-
-          echo "Verifying AWS CDK installation..."
-          which cdk || echo "❌ CDK CLI NOT FOUND"
-          cdk --version || echo "❌ CDK CLI FAILED TO RUN"
+          echo "Installing project dependencies..."
+          cd CDK
+          npm install aws-cdk-lib constructs --save
+          npm install --save-dev @types/node typescript ts-node
+          npm list aws-cdk-lib constructs @types/node typescript ts-node
 
       - name: Deploy Auth Stack
         run: |
