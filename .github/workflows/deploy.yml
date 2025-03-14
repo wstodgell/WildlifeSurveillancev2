@@ -37,37 +37,44 @@ jobs:
         with:
           node-version: "18"
 
-      # ✅ Install the exact AWS CDK version to match aws-cdk-lib
-      - name: Install Correct AWS CDK Version
+      # 🔥 Force remove any cached CDK data
+      - name: Clean Up Any Residual CDK Bootstrap Data
         run: |
+          echo "Cleaning up any old CDK bootstrap files..."
           cd CDK
-          npm uninstall -g aws-cdk || true  # Remove any old global CDK versions
-          npm install -g aws-cdk@latest    # Install the exact version that matches aws-cdk-lib
-          npm ci
-          npm list aws-cdk-lib              # Check installed aws-cdk-lib version
-          cdk --version                     # Verify correct CDK CLI version
-
-      # ✅ Clean CDK cache to prevent conflicts
-      - name: Clean CDK Cache
-        run: |
-          cd CDK
-          rm -rf cdk.out .cdk.context.json
-          rm -rf node_modules
+          rm -rf cdk.out
+          rm -rf node_modules/.cdk
+          rm -rf node_modules/aws-cdk-lib
+          rm -rf node_modules/constructs
+          rm -rf package-lock.json
           npm cache clean --force
-          npm ci  # Reinstall dependencies cleanly
+
+      - name: Install Fresh CDK Dependencies
+        run: |
+          cd CDK
+          npm install @aws-sdk/client-s3
+          npm ci  # Ensures a clean install
+          npm list aws-cdk-lib  # Check installed version
+
+      - name: Debug CDK Version Before Bootstrapping
+        run: |
+          echo "Checking AWS CDK CLI version..."
+          cdk --version
+          echo "Checking installed AWS CDK libraries..."
+          npm list aws-cdk-lib constructs
+
+      - name: Bootstrap CDK Environment
+        run: |
+          cd CDK
+          echo "Bootstrapping AWS CDK..."
+          npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
 
       - name: Synthesize CDK Stack
         run: |
           cd CDK
           npx cdk synth || echo "Synthesis failed"
 
-      # ✅ Use the correct CDK version for bootstrap
-      - name: Bootstrap CDK Environment
-        run: |
-          cd CDK
-          echo "Bootstrapping AWS CDK with Correct Version..."
-          npx cdk@latest bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
-
+      # 🔥 DEPLOYMENT STEPS (UNCHANGED)
       - name: Deploy Configuration Stack
         run: |
           cd CDK
