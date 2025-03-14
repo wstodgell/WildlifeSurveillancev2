@@ -74,12 +74,18 @@ jobs:
       - name: Debug CDK Version & Path
         run: |
           echo "Checking AWS CDK CLI version..."
-          which cdk  # Verify CLI path
-          cdk --version  # Check installed CLI version
+          which cdk || echo "❌ CDK CLI NOT FOUND"
+          cdk --version || echo "❌ CDK CLI FAILED TO RUN"
 
-          echo "Checking installed AWS CDK libraries..."
-          cd CDK  # Make sure we're in the correct directory
-          npm list aws-cdk-lib constructs  # Verify installed dependencies
+          echo "Checking AWS CDK libraries..."
+          cd CDK
+          npm list aws-cdk-lib constructs || echo "❌ AWS CDK LIBRARIES NOT FOUND"
+
+          echo "Checking PATH..."
+          echo $PATH
+
+          echo "Checking global npm packages..."
+          npm list -g --depth=0 || echo "❌ No global npm packages found"
 
       - name: Bootstrap CDK Environment
         run: |
