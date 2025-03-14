@@ -52,28 +52,33 @@ jobs:
 
       - name: Install AWS CDK CLI & Ensure Path
         run: |
+          echo "Uninstalling existing AWS CDK..."
           npm uninstall -g aws-cdk || true  # Ensure fresh install
+
+          echo "Installing latest AWS CDK..."
           npm install -g aws-cdk@latest
 
-          # Ensure the correct path is used for CDK
-          echo "Adding npm global bin to PATH..."
-          export PATH=$(npm bin -g):$PATH
-          echo "Updated PATH: $PATH"
+          echo "Verifying AWS CDK installation..."
+          which cdk || echo "❌ CDK CLI NOT FOUND"
+          cdk --version || echo "❌ CDK CLI FAILED TO RUN"
 
-          # Verify installation
-          echo "Checking AWS CDK CLI version..."
-          which cdk || echo "CDK CLI NOT FOUND"
-          cdk --version || echo "CDK CLI FAILED TO RUN"
+      - name: Ensure AWS CDK Libraries Are Installed
+        run: |
+          cd CDK
+          echo "Checking package.json exists..."
+          [ -f package.json ] || (echo "❌ package.json not found! Run 'npm init' first." && exit 1)
 
-      - name: Debug CDK Version & Path
+          echo "Installing AWS CDK libraries..."
+          npm install aws-cdk-lib constructs --save
+
+          echo "Verifying installed CDK libraries..."
+          npm list aws-cdk-lib constructs || echo "❌ AWS CDK LIBRARIES NOT FOUND"
+
+      - name: Debug CDK Installation & Path
         run: |
           echo "Checking AWS CDK CLI version..."
           which cdk || echo "❌ CDK CLI NOT FOUND"
           cdk --version || echo "❌ CDK CLI FAILED TO RUN"
-
-          echo "Checking AWS CDK libraries..."
-          cd CDK
-          npm list aws-cdk-lib constructs || echo "❌ AWS CDK LIBRARIES NOT FOUND"
 
           echo "Checking PATH..."
           echo $PATH
@@ -89,7 +94,7 @@ jobs:
       - name: Synthesize CDK Stack
         run: |
           cd CDK
-          npx cdk synth || echo "Synthesis failed"
+          npx cdk synth || echo "❌ Synthesis failed"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
