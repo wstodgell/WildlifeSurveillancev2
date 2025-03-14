@@ -56,20 +56,20 @@ jobs:
           npm ci  # Ensures a clean install
           npm list aws-cdk-lib  # Check installed version
 
-      - name: Install AWS CDK CLI & Ensure Path
+      - name: Install AWS CDK CLI & Dependencies
         run: |
-          npm uninstall -g aws-cdk || true  # Ensure fresh install
-          npm install -g aws-cdk@latest
+          echo "🚀 Ensuring fresh AWS CDK CLI install..."
+          npm uninstall -g aws-cdk || true
+          npm install -g aws-cdk@latest  # Install latest CLI (matches aws-cdk-lib)
 
-          # Ensure the correct path is used for CDK
-          echo "Adding npm global bin to PATH..."
-          export PATH=$(npm bin -g):$PATH
-          echo "Updated PATH: $PATH"
+          echo "📦 Installing AWS CDK Dependencies..."
+          cd CDK
+          rm -rf node_modules package-lock.json  # Clean up
+          npm install
+          npm list aws-cdk-lib  # Verify installed CDK version
 
-          # Verify installation
-          echo "Checking AWS CDK CLI version..."
-          which cdk || echo "CDK CLI NOT FOUND"
-          cdk --version || echo "CDK CLI FAILED TO RUN"
+          echo "🔍 Verifying Installed CDK CLI Version..."
+          cdk --version
 
       - name: Debug CDK Version & Path
         run: |
