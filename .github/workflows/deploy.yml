@@ -66,7 +66,7 @@ jobs:
         run: |
           cd CDK
           echo "Bootstrapping AWS CDK with Correct Version..."
-          npx cdk@2.183.0 bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          npx cdk@latest bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
 
       - name: Deploy Configuration Stack
         run: |
