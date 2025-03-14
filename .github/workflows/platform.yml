@@ -25,31 +25,22 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsAdminRole
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install AWS CDK CLI (Stable Version)
-        run: |
-          npm install -g aws-cdk@2.1003.0
-          cdk --version  # Verify installation
-
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: Install dependencies
+      - name: Install AWS CDK CLI & Ensure Path
         run: |
-          cd CDK
-          npm install  # Install all dependencies
-          npm install @aws-sdk/client-s3  # Fix missing module
-          npm run build  # Ensure TypeScript is compiled correctly
+          echo "Uninstalling existing AWS CDK..."
+          npm uninstall -g aws-cdk || true  # Ensure fresh install
 
-      - name: Check if CDK is Bootstrapped
-        run: |
-          if ! aws cloudformation describe-stacks --stack-name CDKToolkit &> /dev/null; then
-            echo "Bootstrapping CDK..."
-            npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
-          else
-            echo "CDK already bootstrapped."
-          fi
+          echo "Installing latest AWS CDK..."
+          npm install -g aws-cdk@latest
+
+          echo "Verifying AWS CDK installation..."
+          which cdk || echo "❌ CDK CLI NOT FOUND"
+          cdk --version || echo "❌ CDK CLI FAILED TO RUN"
 
       - name: Deploy Auth Stack
         run: |
