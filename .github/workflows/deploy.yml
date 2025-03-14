@@ -63,6 +63,12 @@ jobs:
           echo "Checking installed AWS CDK libraries..."
           npm list aws-cdk-lib constructs
 
+      - name: Install AWS CDK CLI
+        run: |
+          npm install -g aws-cdk@latest
+          echo "CDK Version Installed:"
+          cdk --version
+
       - name: Bootstrap CDK Environment
         run: |
           cd CDK
