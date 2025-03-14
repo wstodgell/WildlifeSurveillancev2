@@ -12,6 +12,7 @@ export class ClinicIngestionStack extends Stack {
     // Create a new VPC for the RDS instance
     const vpc = new ec2.Vpc(this, 'RdsVpc', {
       maxAzs: 2, // Create resources in 2 Availability Zones
+      natGateways: 1,  // Use only 1 NAT Gateway instead of 1 per subnet
     });
 
     // Create a secret for the RDS PostgreSQL credentials

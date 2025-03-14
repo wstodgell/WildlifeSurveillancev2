@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
@@ -34,9 +35,16 @@ export class EcsStack extends cdk.Stack {
     const ecsTaskExecutionRoleArn = cdk.Fn.importValue('EcsTaskExecutionRoleArn');
     const ecsTaskExecutionRole = iam.Role.fromRoleArn(this, 'ImportedEcsTaskExecutionRole', ecsTaskExecutionRoleArn);
 
+    // Create a VPC with only 1 NAT Gateway instead of multiple
+    const vpc = new ec2.Vpc(this, 'IoTClusterVpc', {
+      maxAzs: 2,  // Spread across 2 Availability Zones
+      natGateways: 1,  // Only 1 NAT Gateway for all private subnets
+    });
+
      // Create an ECS Cluster for ALL IoT Mock scripts
      const cluster = new ecs.Cluster(this, 'IoTCluster', {
       clusterName: 'IoTCluster',
+      vpc,  // Attach the custom VPC here
       // The default Fargate configurations are already set up,
       // so there's no need to specify additional settings for Fargate
     });
@@ -151,81 +159,6 @@ export class EcsStack extends cdk.Stack {
       exportName: 'HEAFargateServiceName'
     });
 
-
-
-
-    //const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
-
-
-
-    // Later created in iot-stack in format of secretName: `IoT/${thingName}/certs`,  
-    const iotTestThingSecret = secretsmanager.Secret.fromSecretNameV2(this, 'TestThingSecret', 'IoT/TestThing/certs');
-
-    //This role is created so that TEST TRansmitter can read secrets, create/write to logs and also connect to IoT
-    const explicitTestTaskRole = new iam.Role(this, 'ExplicitTestTaskRole', {
-      roleName: 'ExplicitTestTaskRole',  // Assign a clear, meaningful name
-      assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'), // Allows ECS tasks to assume this role
-      description: 'Task role for Test task with permissions for IoT, CloudWatch, and Secrets Manager',
-    });
-    
-    // Grant permissions for IoT Core
-    explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
-      actions: [
-        "iot:DescribeEndpoint",
-        "iot:Publish"
-      ],
-      resources: ["*"],  // You can narrow this down to specific IoT resources if necessary
-    }));
-    
-    // Grant the ECS task permission to retrieve the secret value
-    iotTestThingSecret.grantRead(explicitTestTaskRole);
-    
-    // Grant permissions for CloudWatch Logs
-    explicitTestTaskRole.addToPolicy(new iam.PolicyStatement({
-      actions: [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      resources: [logArn],
-    }));
-    
-
-    // Create the Fargate task definition for the Test task
-    const testTaskDefinition = new ecs.FargateTaskDefinition(this, 'IoTTestTaskDefinition', {
-      family: 'IoT-Test', // Logical family name of this task definition
-      cpu: 256, // CPU units (adjust as needed)
-      memoryLimitMiB: 512, // Memory in MB (adjust as needed)
-      executionRole: ecsTaskExecutionRole, // Use the execution role for pulling images and starting tasks
-      taskRole: explicitTestTaskRole, // Task role used to interact with Secrets Manager for TestThing
-    });
-
-    // Define the container for the Test task, pulled from the ECR repository
-    const testContainer = testTaskDefinition.addContainer('TestContainer', {
-      image: ecs.ContainerImage.fromRegistry(TestEcrRepositoryUri), // Pulls container image from ECR
-      memoryLimitMiB: 512, // Container memory limit
-      cpu: 256, // Container CPU limit
-      logging: new ecs.AwsLogDriver({
-        streamPrefix: 'IoT-Test', // Prefix for the CloudWatch log stream
-        logGroup: logGroup, // The log group where container logs will be sent
-      }),
-    });
-
-    // Set port mapping for the Test container
-    testContainer.addPortMappings({
-      containerPort: 81, // Port exposed by the container (adjust if necessary)
-    });
-
-    // Create an ECS Fargate service for the Test task
-    const testFargateService = new ecs.FargateService(this, 'IoTTestService', {
-      cluster, // The ECS cluster where the task will run
-      taskDefinition: testTaskDefinition, // Task definition that defines the container
-      assignPublicIp: true, // Assign a public IP address so the service is publicly accessible
-      desiredCount: 1, // Number of task instances to run (scale this as needed)
-      enableExecuteCommand: true, // Enable ECS Exec for debugging into the container
-    });
-
-
     // Output for the Task Definition and Service
     new cdk.CfnOutput(this, 'GPSTaskDefinitionFamily', {
       value: GPSTaskDefinition.family,
@@ -239,20 +172,5 @@ export class EcsStack extends cdk.Stack {
       exportName: 'GPSFargateServiceName'
     });
 
-
-
-    // Output for the Task Definition and Service
-    new cdk.CfnOutput(this, 'TestTaskDefinitionFamily', {
-      value: testTaskDefinition.family,
-      description: 'Family of the Test ECS Task Definition',
-      exportName: 'TestTaskDefinitionFamily'
-    });
-
-    // Output the name of the Test Fargate Service
-    new cdk.CfnOutput(this, 'TestFargateServiceName', {
-      value: testFargateService.serviceName, // Name of the service
-      description: 'Name of the Test ECS Fargate Service',
-      exportName: 'TestFargateServiceName',
-    });
   }
 }

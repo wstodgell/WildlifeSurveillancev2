@@ -14,12 +14,6 @@ export class EcrStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const TestRepository = new ecr.Repository(this, 'MyIotTestAppRepository', {
-      repositoryName: common.ECR_REPO_TEST,
-      emptyOnDelete: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-
     const GPSRepository = new ecr.Repository(this, 'MyIotGpsAppRepository', {
       repositoryName: common.ECR_REPO_GPS,
       emptyOnDelete: true,
@@ -45,9 +39,6 @@ export class EcrStack extends cdk.Stack {
 
     this.HeaEcrRepositoryUri = HeaRepository.repositoryUri;
 
-    // store the repository - property of cdk.Stack URI is typically: aws_account_id.dkr.ecr.region.amazonaws.com/repository_name
-    this.TestEcrRepositoryUri = TestRepository.repositoryUri;
-
     // Creates a Cloudformation output to display values: Logical ID = GPS_EcrRepositoryUri and name of the value.
     new cdk.CfnOutput(this, 'GPSEcrRepositoryUri', {
       value: this.GPSEcrRepositoryUri,
@@ -65,12 +56,6 @@ export class EcrStack extends cdk.Stack {
       value: this.HeaEcrRepositoryUri,
       description: 'URI of the Hea ECR repository',
       exportName: 'HEAEcrRepositoryUri'
-    });
-
-    new cdk.CfnOutput(this, 'TestEcrRepositoryUri', {
-      value: this.TestEcrRepositoryUri,
-      description: 'URI of the Test ECR repository',
-      exportName: 'TestEcrRepositoryUri'
     });
 
     // Create the IAM role with AdministratorAccess
