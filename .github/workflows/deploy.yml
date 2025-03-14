@@ -47,11 +47,14 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install dependencies
+      - name: Install AWS CDK CLI & Dependencies
         run: |
-          cd CDK
-          npm install @aws-sdk/client-s3
-          npm ci
+          npm install -g aws-cdk@latest  # Install CLI globally
+          cd CDK  # Enter project folder
+          npm ci  # Install dependencies from package-lock.json
+          npm list aws-cdk-lib constructs  # Verify installed CDK dependencies
+          echo "CDK Version Installed:"
+          cdk --version
 
       - name: Clean CDK Context
         run: |
