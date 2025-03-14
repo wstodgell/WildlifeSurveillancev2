@@ -50,11 +50,36 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Install dependencies
+      - name: Install AWS CDK CLI & Ensure Path
         run: |
+          npm uninstall -g aws-cdk || true  # Ensure fresh install
+          npm install -g aws-cdk@latest
+
+          # Ensure the correct path is used for CDK
+          echo "Adding npm global bin to PATH..."
+          export PATH=$(npm bin -g):$PATH
+          echo "Updated PATH: $PATH"
+
+          # Verify installation
+          echo "Checking AWS CDK CLI version..."
+          which cdk || echo "CDK CLI NOT FOUND"
+          cdk --version || echo "CDK CLI FAILED TO RUN"
+
+      - name: Debug CDK Version & Path
+        run: |
+          echo "Checking AWS CDK CLI version..."
+          which cdk || echo "❌ CDK CLI NOT FOUND"
+          cdk --version || echo "❌ CDK CLI FAILED TO RUN"
+
+          echo "Checking AWS CDK libraries..."
           cd CDK
-          npm install @aws-sdk/client-s3
-          npm ci
+          npm list aws-cdk-lib constructs || echo "❌ AWS CDK LIBRARIES NOT FOUND"
+
+          echo "Checking PATH..."
+          echo $PATH
+
+          echo "Checking global npm packages..."
+          npm list -g --depth=0 || echo "❌ No global npm packages found"
 
       - name: Clean CDK Context
         run: |
