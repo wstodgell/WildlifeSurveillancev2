@@ -56,18 +56,19 @@ jobs:
           npm ci  # Ensures a clean install
           npm list aws-cdk-lib  # Check installed version
 
-      - name: Debug CDK Version Before Bootstrapping
-        run: |
-          echo "Checking AWS CDK CLI version..."
-          cdk --version
-          echo "Checking installed AWS CDK libraries..."
-          npm list aws-cdk-lib constructs
-
       - name: Install AWS CDK CLI
         run: |
           npm install -g aws-cdk@latest
           echo "CDK Version Installed:"
           cdk --version
+
+      - name: Debug CDK Version & Path
+        run: |
+          echo "Checking AWS CDK CLI version..."
+          which cdk  # This shows the exact path of the installed CLI
+          cdk --version  # This confirms CDK is now installed
+          echo "Checking installed AWS CDK libraries..."
+          npm list aws-cdk-lib constructs
 
       - name: Bootstrap CDK Environment
         run: |
