@@ -56,9 +56,12 @@ jobs:
           npm ci  # Ensures a clean install
           npm list aws-cdk-lib  # Check installed version
 
-      - name: Install AWS CDK CLI
+      - name: Install AWS CDK CLI & Dependencies
         run: |
-          npm install -g aws-cdk@latest
+          npm install -g aws-cdk@latest  # Install CLI globally
+          cd CDK  # Enter project folder
+          npm ci  # Install dependencies from package-lock.json
+          npm list aws-cdk-lib constructs  # Verify installed CDK dependencies
           echo "CDK Version Installed:"
           cdk --version
 
