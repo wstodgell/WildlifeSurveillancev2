@@ -71,6 +71,11 @@ jobs:
           echo "🔍 Verifying Installed CDK CLI Version..."
           cdk --version
 
+      - name: Verify CDK Installation
+        run: |
+          echo "🔍 Running CDK Doctor..."
+          npx cdk doctor
+
       - name: Debug CDK Version & Path
         run: |
           echo "Checking AWS CDK CLI version..."
