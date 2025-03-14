@@ -68,10 +68,12 @@ jobs:
       - name: Debug CDK Version & Path
         run: |
           echo "Checking AWS CDK CLI version..."
-          which cdk  # This shows the exact path of the installed CLI
-          cdk --version  # This confirms CDK is now installed
+          which cdk  # Verify CLI path
+          cdk --version  # Check installed CLI version
+
           echo "Checking installed AWS CDK libraries..."
-          npm list aws-cdk-lib constructs
+          cd CDK  # Make sure we're in the correct directory
+          npm list aws-cdk-lib constructs  # Verify installed dependencies
 
       - name: Bootstrap CDK Environment
         run: |
