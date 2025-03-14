@@ -34,6 +34,7 @@ jobs:
         run: |
           echo "Installing project dependencies..."
           cd CDK
+          npm install -g aws-cdk@latest
           npm install aws-cdk-lib constructs --save
           npm install --save-dev @types/node typescript ts-node
           npm list aws-cdk-lib constructs @types/node typescript ts-node
