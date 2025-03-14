@@ -166,18 +166,6 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Output TEST_ECR URI
-        id: output-test-ecr-uri
-        run: |
-          TEST_ECR_URI=$(aws cloudformation describe-stacks --stack-name EcrStack --query "Stacks[0].Outputs[?OutputKey=='TestEcrRepositoryUri'].OutputValue" --output text)
-          echo "TEST_ECR_URI=$TEST_ECR_URI"
-          if [ -z "$TEST_ECR_URI" ]; then
-            echo "TEST_ECR_URI is empty!"
-          fi
-          echo "TEST_ECR_URI=$TEST_ECR_URI" >> $GITHUB_ENV
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -225,18 +213,6 @@ jobs:
         run: |
           docker build -t ${{ env.HEA_ECR_URI }}:latest -f IoTMockSensors/IoT_HEA/Dockerfile IoTMockSensors/IoT_HEA
           docker push ${{ env.HEA_ECR_URI }}:latest
-
-      # Log in to the Amazon TEST ECR registry
-      - name: Log in to Amazon TEST ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.TEST_ECR_URI }}
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Build and Push *Test* Docker Image
-        run: |
-          docker build -t ${{ env.TEST_ECR_URI }}:latest -f IoTMockSensors/IoT_Test/Dockerfile IoTMockSensors/IoT_Test
-          docker push ${{ env.TEST_ECR_URI }}:latest
 
       # Deploy the ECS stack, which will use the Docker image in the ECR repository
       - name: Deploy ECS Stack
