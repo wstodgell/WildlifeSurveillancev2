@@ -87,11 +87,12 @@ jobs:
           echo "Checking global npm packages..."
           npm list -g --depth=0 || echo "❌ No global npm packages found"
 
-      - name: Bootstrap CDK Environment
+      - name: Debug AWS CDK Bootstrap
         run: |
+          echo "Running AWS CDK Bootstrap Debugging..."
           cd CDK
-          echo "Bootstrapping AWS CDK..."
-          npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          npx cdk doctor
+          npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} --force --verbose
 
       - name: Synthesize CDK Stack
         run: |
