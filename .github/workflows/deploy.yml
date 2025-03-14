@@ -26,7 +26,7 @@ jobs:
       - name: Debug GitHub OIDC Token
         run: |
           echo "ACTION TOKEN REQUEST URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
-          echo "ACTION TOKEN REQUEST TOKEN: $ACTIONS_ID_TOKEN_REQUEST_TOKEN
+          echo "ACTION TOKEN REQUEST TOKEN: $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v3
