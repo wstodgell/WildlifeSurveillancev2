@@ -49,7 +49,7 @@ jobs:
 
       - name: Install AWS CDK CLI & Dependencies
         run: |
-          npm install -g aws-cdk@latest  # Install CLI globally
+          npm install -g aws-cdk@latest  # Install CLI globallyg
           cd CDK  # Enter project folder
           npm ci  # Install dependencies from package-lock.json
           npm list aws-cdk-lib constructs  # Verify installed CDK dependencies
