@@ -11,6 +11,8 @@ export function createIoTThing(
   policyName: string,
   region: string
 ) {
+
+  console.log(`👀 Creating thing: ${thingName}`);
   // Create IoT Thing
   const iotThing = new iot.CfnThing(scope, `IoTThing-${thingName}`, {
     thingName: thingName,

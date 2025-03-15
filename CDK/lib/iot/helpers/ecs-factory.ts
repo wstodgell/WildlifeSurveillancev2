@@ -16,6 +16,7 @@ export function createIoTECS(
     cluster: cdk.aws_ecs.ICluster
   ) {
 
+    console.log(`👀 Creating ECS: ${ecsPrefix}`);
     //Creates a new CloudWatch Log Group in AWS.  LogGroup = container for storing logs
     //This = ECS Stack
     //ECSLogGroup (identifier)
