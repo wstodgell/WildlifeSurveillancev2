@@ -8,13 +8,19 @@ export class AmplifyStack extends cdk.Stack {
     super(scope, id, props);
 
     // ✅ Retrieve GitHub OAuth Token from AWS Secrets Manager
-    const githubToken = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'amplify-github-token');
+    const githubToken = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'GITHUB_OAUTH_TOKEN');
 
-    // ✅ Use `.unsafeUnwrap()` to explicitly extract the secret
+    // ✅ Create an AWS Amplify App (Connects to GitHub)
     const amplifyApp = new amplify.CfnApp(this, 'MyAmplifyApp', {
-      name: 'MyFrontendApp',
-      repository: 'https://github.com/wstodgell/WildlifeSurveillancev2.git',
-      oauthToken: githubToken.secretValue.unsafeUnwrap(), // Unwrap to avoid synth-time errors
+      name: 'WildlifeSurveillanceApp', // Change the name as needed
+      repository: 'https://github.com/wstodgell/WildlifeSurveillancev2.git', // Your correct GitHub repo
+      oauthToken: githubToken.secretValue.unsafeUnwrap(), // Extract secret token securely
+    });
+
+    // ✅ Define the Branch (Amplify Will Deploy from "main" Branch)
+    const amplifyBranch = new amplify.CfnBranch(this, 'MainBranch', {
+      appId: amplifyApp.attrAppId,
+      branchName: 'main', // Make sure this is the correct branch name
     });
 
     // ✅ Output Amplify App ID for reference
