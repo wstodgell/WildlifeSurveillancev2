@@ -24,6 +24,24 @@ export class AmplifyStack extends cdk.Stack {
       appId: amplifyApp.attrAppId,
       branchName: 'main',
       enableAutoBuild: true,
+      buildSpec: `
+        version: 1
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - cd field_website  # ✅ Move into the correct directory
+                - npm install
+            build:
+              commands:
+                - npm run build
+          artifacts:
+            baseDirectory: /field_website/build  # ✅ Tell Amplify where the final site files are
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*`
     });
 
     // ✅ Output Amplify App ID for reference
