@@ -1,22 +1,14 @@
+import AWS from "aws-sdk";
 import { fetchAuthSession } from "@aws-amplify/auth";
 import { Amplify } from "aws-amplify";
-import AWS from "aws-sdk";
-import awsExports from "./aws-exports"; // ✅ Ensure Amplify is configured before fetching credentials
-
-// ✅ Ensure Amplify is initialized before fetching credentials
-Amplify.configure(awsExports);
-
-AWS.config.update({ region: "us-east-1" });
 
 const SECRET_NAME = "AmplifyUserCredentials"; // Stored in AWS Secrets Manager
 
+// ✅ Function to dynamically fetch Cognito configuration
 async function getCognitoConfig() {
   try {
-    console.log(
-      "🔍 Fetching Cognito Config using authenticated credentials..."
-    );
+    console.log("🔍 Fetching Cognito Config...");
 
-    // ✅ Ensure Amplify is configured before fetching session
     const session = await fetchAuthSession().catch((error) => {
       console.error("❌ Error fetching session:", error);
       return null;
@@ -26,14 +18,14 @@ async function getCognitoConfig() {
       throw new Error("❌ Unable to retrieve AWS credentials.");
     }
 
-    // ✅ Set AWS SDK credentials dynamically
     AWS.config.credentials = session.credentials;
+    AWS.config.update({ region: "us-east-1" });
 
     const secretsManager = new AWS.SecretsManager();
-
     const data = await secretsManager
       .getSecretValue({ SecretId: SECRET_NAME })
       .promise();
+
     if (!data || !data.SecretString) {
       console.error("❌ Error: SecretString is empty!");
       return null;
@@ -65,4 +57,5 @@ async function getCognitoConfig() {
   }
 }
 
+// ✅ Export the function (DO NOT execute it on import)
 export default getCognitoConfig;

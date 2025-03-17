@@ -27,7 +27,7 @@ export class AmplifyStack extends cdk.Stack {
     amplifyRole.addToPolicy(secretsPolicy);
 
     // ✅ Retrieve GitHub OAuth Token from AWS Secrets Manager
-    const githubSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'aws-ampligy-github-token');
+    const githubSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'aws-amplify-github-token');
     const githubToken = githubSecret.secretValueFromJson('GITHUB_OAUTH_TOKEN').unsafeUnwrap();
 
     // ✅ Create AWS Amplify App and Attach the IAM Role
