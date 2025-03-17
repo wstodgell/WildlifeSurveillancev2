@@ -8,7 +8,7 @@ export class AmplifyStack extends cdk.Stack {
     super(scope, id, props);
 
     // ✅ Retrieve GitHub OAuth Token from AWS Secrets Manager
-    const githubSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'aws-ampligy-github-token');
+    const githubSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'aws-amplify-github-token');
     const githubToken = githubSecret.secretValueFromJson('GITHUB_OAUTH_TOKEN').unsafeUnwrap();
 
     // ✅ Create AWS Amplify App using OAuth Token
@@ -36,12 +36,12 @@ export class AmplifyStack extends cdk.Stack {
               commands:
                 - npm run build
           artifacts:
-            baseDirectory: /field_website/build  # ✅ Tell Amplify where the final site files are
+            baseDirectory: field_website/build  # ✅ Correct relative path
             files:
               - '**/*'
           cache:
             paths:
-              - node_modules/**/*`
+              - field_website/node_modules/**/*`
     });
 
     // ✅ Output Amplify App ID for reference
