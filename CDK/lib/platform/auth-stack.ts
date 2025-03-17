@@ -5,7 +5,6 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 export class AuthStack extends cdk.Stack {
-  // Exposing these properties so other stacks (or the frontend) can use them
   public readonly userPool: cognito.UserPool;
   public readonly userPoolClient: cognito.UserPoolClient;
   public readonly identityPool: cognito.CfnIdentityPool;
@@ -14,123 +13,126 @@ export class AuthStack extends cdk.Stack {
     super(scope, id, props);
 
     /** 
-     * Step 1: Create a Cognito User Pool
-     * - A **User Pool** is a managed authentication service in AWS.
-     * - It handles user registration, login, password reset, etc.
+     * ✅ Step 1: Create Cognito User Pool (Authentication System)
      */
     this.userPool = new cognito.UserPool(this, 'WildlifeUserPool', {
-      userPoolName: 'WildlifeUserPool',  // Custom name for the pool
-      signInAliases: { email: true },    // Users log in with their email
-      selfSignUpEnabled: true,           // Users can sign up themselves
-      autoVerify: { email: true },       // Automatically verify email addresses
+      userPoolName: 'WildlifeUserPool',
+      signInAliases: { email: true }, 
+      selfSignUpEnabled: true, 
+      autoVerify: { email: true }, 
       standardAttributes: {
-        email: { required: true, mutable: false }, // Email is required and cannot be changed
+        email: { required: true, mutable: false },
       },
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes the user pool when stack is destroyed (not for production)
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     /**
-     * Step 2: Create a Cognito User Pool Client
-     * - A **User Pool Client** allows applications to interact with the User Pool.
-     * - This client ID will be used in the frontend to authenticate users.
+     * ✅ Step 2: Create Cognito User Pool Client (For Web & Mobile Apps)
      */
     this.userPoolClient = new cognito.UserPoolClient(this, 'WildlifeUserPoolClient', {
-      userPool: this.userPool,  // Connects to the user pool created above
-      generateSecret: false,    // This is for public clients (web & mobile apps) that don't use a secret key
+      userPool: this.userPool,
+      generateSecret: false,
     });
 
     /**
-     * Step 3: Create a Cognito Identity Pool
-     * - **Identity Pools** grant AWS access (e.g., S3, DynamoDB) to users authenticated via the User Pool.
-     * - This allows authenticated users to assume an IAM role and interact with AWS resources.
+     * ✅ Step 3: Create Cognito Identity Pool (Allows Access to AWS Services)
      */
     this.identityPool = new cognito.CfnIdentityPool(this, 'WildlifeIdentityPool', {
-      identityPoolName: 'WildlifeIdentityPool',  
-      allowUnauthenticatedIdentities: false, // Only authenticated users can access AWS resources
+      identityPoolName: 'WildlifeIdentityPool',
+      allowUnauthenticatedIdentities: false,
       cognitoIdentityProviders: [
         {
-          clientId: this.userPoolClient.userPoolClientId, // Connects to the User Pool Client
-          providerName: this.userPool.userPoolProviderName, // Identifies the User Pool as the identity provider
+          clientId: this.userPoolClient.userPoolClientId,
+          providerName: this.userPool.userPoolProviderName,
         },
       ],
     });
 
+    // ✅ Store Cognito values in AWS Secrets Manager
+    new secretsmanager.Secret(this, 'CognitoSecrets', {
+      secretName: 'WildlifeSurveillanceCognito', //TODO - store this in GITHUB
+      description: 'Cognito User Pool and Identity Pool IDs',
+      secretObjectValue: {
+        userPoolId: cdk.SecretValue.unsafePlainText(this.userPool.userPoolId),
+        userPoolClientId: cdk.SecretValue.unsafePlainText(this.userPoolClient.userPoolClientId),
+        identityPoolId: cdk.SecretValue.unsafePlainText(this.identityPool.ref),
+      },
+    });
+
+    // ✅ Output Cognito Secret Name //TODO store this in GitHub
+    new cdk.CfnOutput(this, 'CognitoSecretName', {
+      value: 'WildlifeSurveillanceCognito',
+      description: 'Secret name storing Cognito values',
+    });
+
     /**
-     * Step 4: Create an IAM Role for Authenticated Users
-     * - This role will be assumed by users who sign in through Cognito.
-     * - It determines what AWS services authenticated users can access.
+     * ✅ Step 4: Create IAM Role for Authenticated Users (Grants AWS Access)
      */
     const authenticatedRole = new iam.Role(this, 'CognitoAuthRole', {
       assumedBy: new iam.FederatedPrincipal(
-        'cognito-identity.amazonaws.com',  // Specifies that this role is for Cognito users
+        'cognito-identity.amazonaws.com',
         {
-          "StringEquals": { "cognito-identity.amazonaws.com:aud": this.identityPool.ref },  // This role is only for this Identity Pool
-          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" } // Only authenticated users
+          "StringEquals": { "cognito-identity.amazonaws.com:aud": this.identityPool.ref },
+          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "authenticated" }
         },
-        "sts:AssumeRoleWithWebIdentity" // This allows Cognito users to assume this role
+        "sts:AssumeRoleWithWebIdentity"
       ),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"),  // Allows users to access S3 (modify this as needed)
+        iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"),
       ]
     });
 
     /**
-     * Step 5: Attach the IAM Role to the Identity Pool
-     * - This step links the IAM role we created to the Cognito Identity Pool.
-     * - Now, authenticated users will assume the `CognitoAuthRole` when they log in.
+     * ✅ Step 5: Attach IAM Role to Identity Pool
      */
     new cognito.CfnIdentityPoolRoleAttachment(this, 'IdentityPoolRoleAttachment', {
-      identityPoolId: this.identityPool.ref,  // Connect to our Identity Pool
-      roles: { authenticated: authenticatedRole.roleArn }, // Assign our IAM role to authenticated users
+      identityPoolId: this.identityPool.ref,
+      roles: { authenticated: authenticatedRole.roleArn },
     });
 
     /**
-     * Step 6: Output Important IDs
-     * - These values are needed in your frontend application.
-     * - They allow Amplify to know how to connect to Cognito.
+     * ✅ Step 6: Output Cognito IDs for Other Stacks (Needed for Amplify)
      */
-    new cdk.CfnOutput(this, 'UserPoolId', { 
-      value: this.userPool.userPoolId, 
-      description: 'ID of the Cognito User Pool' 
+    new cdk.CfnOutput(this, 'UserPoolId', {
+      value: this.userPool.userPoolId,
+      exportName: 'UserPoolId',
     });
 
-    new cdk.CfnOutput(this, 'UserPoolClientId', { 
-      value: this.userPoolClient.userPoolClientId, 
-      description: 'ID of the Cognito User Pool Client' 
+    new cdk.CfnOutput(this, 'UserPoolClientId', {
+      value: this.userPoolClient.userPoolClientId,
+      exportName: 'UserPoolClientId',
     });
 
-    new cdk.CfnOutput(this, 'IdentityPoolId', { 
-      value: this.identityPool.ref, 
-      description: 'ID of the Cognito Identity Pool' 
+    new cdk.CfnOutput(this, 'IdentityPoolId', {
+      value: this.identityPool.ref,
+      exportName: 'IdentityPoolId',
     });
 
-    new cdk.CfnOutput(this, 'AuthenticatedRoleArn', { 
-      value: authenticatedRole.roleArn, 
-      description: 'IAM Role for authenticated users' 
-    });
-
-    // ******************************** Create User
-    // Create IAM User
+    /**
+     * ✅ Step 7: Create IAM User for AWS Amplify
+     */
     const amplifyUser = new iam.User(this, 'AmplifyUser', {
       userName: 'AmplifyAdmin',
     });
 
-    // Attach Required Policies
+    // Attach Necessary IAM Policies for Amplify Deployments
     amplifyUser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess-Amplify'));
-    
-    // (Optional) Attach Additional Policies If Needed
     amplifyUser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'));
     amplifyUser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCloudFormationFullAccess'));
     amplifyUser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonCognitoPowerUser'));
     amplifyUser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess'));
     amplifyUser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('IAMFullAccess'));
 
-    // Create Access Key for the User
+    /**
+     * ✅ Step 8: Create Access Keys for the Amplify IAM User
+     */
     const accessKey = new iam.CfnAccessKey(this, 'AmplifyUserAccessKey', {
       userName: amplifyUser.userName,
     });
 
-    // Store credentials in AWS Secrets Manager (Optional, but recommended)
+    /**
+     * ✅ Step 9: Store IAM Credentials in AWS Secrets Manager
+     */
     new secretsmanager.Secret(this, 'AmplifySecret', {
       secretName: 'AmplifyUserCredentials',
       description: 'IAM User Credentials for Amplify CLI',
@@ -140,7 +142,9 @@ export class AuthStack extends cdk.Stack {
       },
     });
 
-    // Output Access Keys (You may want to remove this in production)
+    /**
+     * ✅ Step 10: Output IAM User Access Keys (For Debugging, Remove in Production)
+     */
     new cdk.CfnOutput(this, 'AmplifyAccessKeyId', {
       value: accessKey.ref,
       description: 'Amplify IAM User Access Key ID',
