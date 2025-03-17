@@ -1,28 +1,42 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as amplify from 'aws-cdk-lib/aws-amplify';
-import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 export class AmplifyStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // ✅ Retrieve Cognito User Pool & Identity Pool IDs from the Auth Stack
-    const userPoolId = cdk.Fn.importValue('UserPoolId');
-    const userPoolClientId = cdk.Fn.importValue('UserPoolClientId');
-    const identityPoolId = cdk.Fn.importValue('IdentityPoolId');
+    // ✅ Create IAM Role for AWS Amplify
+    const amplifyRole = new iam.Role(this, "AmplifyRole", {
+      assumedBy: new iam.ServicePrincipal("amplify.amazonaws.com"),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess-Amplify"),
+      ],
+    });
+
+    // ✅ Allow Amplify to Read Cognito Secrets from AWS Secrets Manager
+    const secretsPolicy = new iam.PolicyStatement({
+      actions: ["secretsmanager:GetSecretValue"],
+      resources: [
+        `arn:aws:secretsmanager:us-east-1:${this.account}:secret:AmplifyUserCredentials-*`,
+      ],
+    });
+
+    amplifyRole.addToPolicy(secretsPolicy);
 
     // ✅ Retrieve GitHub OAuth Token from AWS Secrets Manager
     const githubSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubToken', 'aws-ampligy-github-token');
     const githubToken = githubSecret.secretValueFromJson('GITHUB_OAUTH_TOKEN').unsafeUnwrap();
 
-    // ✅ Create AWS Amplify App using OAuth Token
+    // ✅ Create AWS Amplify App and Attach the IAM Role
     const amplifyApp = new amplify.CfnApp(this, 'MyAmplifyApp', {
       name: 'WildlifeSurveillanceApp',
       repository: 'https://github.com/wstodgell/WildlifeSurveillancev2.git',
       platform: 'WEB',
       oauthToken: githubToken,
+      iamServiceRole: amplifyRole.roleArn, // ✅ Attach IAM Role Here
     });
 
     // ✅ Define the main branch with auto-build enabled
@@ -49,5 +63,12 @@ export class AmplifyStack extends cdk.Stack {
             paths:
               - field_website/node_modules/**/*`
     });
+
+    // ✅ Output Role ARN (For Debugging)
+    new cdk.CfnOutput(this, "AmplifyRoleArn", {
+      value: amplifyRole.roleArn,
+      description: "IAM Role used by AWS Amplify",
+    });
+
   }
 }
