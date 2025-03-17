@@ -39,7 +39,7 @@ export class AuthStack extends cdk.Stack {
      */
     this.identityPool = new cognito.CfnIdentityPool(this, 'WildlifeIdentityPool', {
       identityPoolName: 'WildlifeIdentityPool',
-      allowUnauthenticatedIdentities: false,
+      allowUnauthenticatedIdentities: true, // ✅ ALLOW UNAUTHENTICATED ACCESS
       cognitoIdentityProviders: [
         {
           clientId: this.userPoolClient.userPoolClientId,
@@ -83,11 +83,37 @@ export class AuthStack extends cdk.Stack {
     });
 
     /**
-     * ✅ Step 5: Attach IAM Role to Identity Pool
+     * ✅ Step 4b: Create IAM Role for Unauthenticated Users
+     */
+    const unauthenticatedRole = new iam.Role(this, 'CognitoUnauthRole', {
+      assumedBy: new iam.FederatedPrincipal(
+        'cognito-identity.amazonaws.com',
+        {
+          "StringEquals": { "cognito-identity.amazonaws.com:aud": this.identityPool.ref },
+          "ForAnyValue:StringLike": { "cognito-identity.amazonaws.com:amr": "unauthenticated" } // ✅ UNAUTHENTICATED USERS
+        },
+        "sts:AssumeRoleWithWebIdentity"
+      ),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName("AWSLambda_ReadOnlyAccess"), // Example Policy
+      ]
+    });
+
+    // ✅ Attach Secrets Manager Access to Unauthenticated Role
+    unauthenticatedRole.addToPolicy(new iam.PolicyStatement({
+      actions: ["secretsmanager:GetSecretValue"],
+      resources: [`arn:aws:secretsmanager:us-east-1:${this.account}:secret:AmplifyUserCredentials-*`],
+    }));
+
+    /**
+     * ✅ Step 5: Attach IAM Roles to Identity Pool
      */
     new cognito.CfnIdentityPoolRoleAttachment(this, 'IdentityPoolRoleAttachment', {
       identityPoolId: this.identityPool.ref,
-      roles: { authenticated: authenticatedRole.roleArn },
+      roles: { 
+        authenticated: authenticatedRole.roleArn, 
+        unauthenticated: unauthenticatedRole.roleArn // ✅ ATTACH UNAUTHENTICATED ROLE
+      },
     });
 
     /**

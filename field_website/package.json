@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@aws-amplify/auth": "^6.11.4",
+    "@aws-amplify/auth": "^6.11.5",
     "@aws-cdk/aws-amplify-alpha": "^2.183.0-alpha.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

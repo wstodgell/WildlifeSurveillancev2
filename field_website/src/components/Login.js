@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Auth } from "aws-amplify";
+import { signIn } from "@aws-amplify/auth"; // ✅ FIXED: New import
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -9,8 +9,8 @@ function Login({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await Auth.signIn(username, password);
-      onLogin(); // Calls the parent function to set loggedIn = true
+      await signIn({ username, password }); // ✅ FIXED: Use `signIn()` correctly
+      onLogin();
     } catch (err) {
       console.error("Login error: ", err);
       setError(err.message || "Failed to login.");

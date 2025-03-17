@@ -1,32 +1,45 @@
 import React, { useEffect, useState } from "react";
-import { Amplify, Auth } from "aws-amplify";
+import { Amplify } from "aws-amplify";
+import { signOut } from "@aws-amplify/auth";
 import getCognitoConfig from "./aws-exports";
 import Login from "./components/Login";
 import FileUpload from "./components/FileUpload";
 
 function App() {
   const [configLoaded, setConfigLoaded] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     async function loadConfig() {
-      const config = await getCognitoConfig();
-      if (config) {
-        Amplify.configure(config); // ✅ Dynamically load Cognito config
+      try {
+        console.log("🔍 Fetching Amplify Configuration...");
+        const config = await getCognitoConfig();
+
+        if (!config) {
+          console.error(
+            "❌ No configuration found, authentication cannot continue."
+          );
+          return;
+        }
+
+        console.log("✅ Amplify Config Loaded:", config);
+        Amplify.configure(config);
         setConfigLoaded(true);
+      } catch (error) {
+        console.error("❌ Error loading AWS configuration:", error);
       }
     }
     loadConfig();
   }, []);
 
-  const [loggedIn, setLoggedIn] = useState(false);
   const handleLogin = () => setLoggedIn(true);
   const handleLogout = async () => {
-    await Auth.signOut();
+    await signOut();
     setLoggedIn(false);
   };
 
   if (!configLoaded) {
-    return <p>Loading authentication...</p>; // Show loading screen while fetching secrets
+    return <p>Loading authentication...</p>;
   }
 
   return (
