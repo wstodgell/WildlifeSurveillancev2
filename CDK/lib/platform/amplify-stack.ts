@@ -28,7 +28,7 @@ export class AmplifyStack extends cdk.Stack {
     // ✅ Define the main branch with auto-build enabled
     const amplifyBranch = new amplify.CfnBranch(this, 'MainBranch', {
       appId: amplifyApp.attrAppId,
-      branchName: 'main',
+      branchName: 'master',
       enableAutoBuild: true,
       buildSpec: `
         version: 1
