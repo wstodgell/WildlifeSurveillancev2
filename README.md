@@ -3,24 +3,19 @@
 This project is a **portfolio simulation**, designed to showcase how I would architect and implement a scalable, secure, AWS cloud-native solution in response to a **wildlife-origin virus outbreak** with potential human spillover.
 
 It demonstrates my experience in:
-- Designing modular AWS infrastructure with CDK
-- Integrating IoT data collection, genomic analysis, and cloud-scale collaboration
-- Applying secure data practices across sensitive health datasets
 
-Everything in this project is fictional but grounded in real-world architecture patterns used in health, government, and research cloud systems.
-
-It demonstrates my experience in:
-
+- Creating clear architectural documentation and artifacts to communicate with dev teams, analysts, and leadership
+- Understanding and modeling business cases (e.g., opt-in human health data coordination)
 - Designing modular AWS infrastructure using the AWS Cloud Development Kit (CDK)
 - Integrating IoT data collection with genomic analysis pipelines and cloud-scale data sharing
 - Applying security best practices with AWS services (IAM, Secrets Manager, IoT Core certificates, fine-grained access policies)
 - Structuring infrastructure as reusable, maintainable code across multiple stacks
-- Understanding and modeling business cases (e.g., opt-in human health data coordination)
-- Creating clear architectural documentation and artifacts to communicate with dev teams, analysts, and leadership
+
+Everything in this project is fictional but grounded in real-world architecture patterns used in health, government, and research cloud systems.
 
 # Scenario: Wildlife Health Surveillance Cloud Solution (WATCH)
 
-An AWS cloud-native solution designed to support the **Wildlife Health Surveillance (WHS) Program**, an **imaginary** program dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
+**Wildlife Health Surveillance (WHS) Program**, is program dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
 
 ---
 
