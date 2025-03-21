@@ -1,12 +1,8 @@
 # 🐾 Wildlife Health Surveillance Cloud Solution (WATCH)
 
-A cloud-native solution designed to support the **Wildlife Health Surveillance (WHS) Program**, enabling secure genomic analysis, data storage, and cross-agency collaboration through scalable AWS infrastructure. Built with AWS CDK.
+## 🧐 What is this?
 
----
-
-## 🌍 Project Context
-
-The Wildlife Health Surveillance (WHS) Program is dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
+An AWS cloud-native solution designed to support the **Wildlife Health Surveillance (WHS) Program**, an **imaginary** program dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
 
 ---
 
