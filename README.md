@@ -15,7 +15,9 @@ Everything in this project is fictional but grounded in real-world architecture 
 
 # Scenario: Wildlife Health Surveillance Cloud Solution (WATCH)
 
-**Wildlife Health Surveillance (WHS) Program**, is program dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
+**Wildlife Health Surveillance (WHS) Program**, is a fictional program dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
+
+![Reference Architecture](./assets/Reference_Architecture.png)
 
 ---
 
