@@ -74,6 +74,8 @@ Everything in this project is fictional but grounded in real-world architecture 
 
 ## ⚙️ AWS Architecture (via CDK)
 
+## ⚙️ AWS Architecture (via CDK)
+
 This solution is split across modular stacks:
 
 | Stack | Purpose |
@@ -82,28 +84,34 @@ This solution is split across modular stacks:
 | `EcsStack` | Deploys ECS Fargate services for IoT telemetry publishing |
 | `IotCodeStack` | Automates IoT Thing creation, policy assignment, cert management |
 | `DataIngestionStack` | Handles ingestion pipelines |
-| `DataAnalyticsStack` | Sets up batch compute environments for genomic analysis |
-| `AuthStack` | Centralized authentication and role management |
-| `AmplifyStack` | Front-end hosting for UI and dashboards |
+| `DataAnalyticsStack` | Sets up AWS Glue jobs, Athena queries, and S3 data storage |
+| `AuthStack` | Implements AWS Cognito authentication for secure access |
+| `AmplifyStack` | Deploys a front-end UI using AWS Amplify |
+| `ClinicIngestionStack` | Manages integration with PostgreSQL for clinic-related data ingestion |
+| `FileGatewayStack` | Facilitates file uploads and secure storage on S3 |
 
 ---
 
 ## 🔐 Security Features
 
-- Secure secrets storage using AWS Secrets Manager
-- Fine-grained IAM roles for ECS tasks
-- Automated IoT cert/key management
-- Role-based access to genomic data
+- **AWS Secrets Manager** for secure credential storage
+- **IAM Roles & Policies** enforcing fine-grained access control
+- **AWS Cognito** for authentication & identity management
+- **Encrypted Data Pipelines** with S3 & RDS security best practices
+- **AWS Direct Connect** for secure, high-speed clinic data exchange
 
 ---
 
 ## 📦 Tech Stack
 
-- **AWS CDK** (TypeScript)
-- **ECR, ECS, IoT Core, Secrets Manager, CloudWatch**
-- **Python + Linux environments for genomics**
-- **Amplify + Auth (optional frontend)**
-
+### **☁️ Main AWS Services Used**
+- **Compute:** ECS Fargate, Lambda
+- **Storage:** S3, RDS (PostgreSQL), AWS Storage Gateway
+- **IoT & Data Streaming:** AWS IoT Core, Kinesis, SNS
+- **Security & IAM:** Cognito, Secrets Manager, IAM Policies
+- **Data Processing:** AWS Glue, Athena, Step Functions, DynamoDB
+- **Front-End & API Gateway:** AWS Amplify, API Gateway
+- **Monitoring & Logging:** CloudWatch, CloudTrail, Metabase
 ---
 
 ## 📁 Repo Structure
