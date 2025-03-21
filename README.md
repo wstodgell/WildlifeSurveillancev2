@@ -26,10 +26,49 @@ Everything in this project is fictional but grounded in real-world architecture 
 
 ---
 
-## 🧪 Key Use Cases
+## 🧪 Key Use Cases Identified from Architecture
 
-- **Rabies Surveillance:** Detecting and analyzing viral samples from wildlife populations.
-- **Chronic Wasting Disease Monitoring:** Tracking disease patterns in deer populations to inform health strategy.
+<details>
+  <summary>1️⃣ IoT-Based Wildlife Data Collection</summary>
+  
+  - **GPS Collars** on animals collect movement and geolocation data.
+  - **Environmental Data Sensors** track climate, pollution, and habitat conditions.
+  - **Health Monitoring Devices** collect biological and physiological data from wildlife.
+  - **Camera Traps** capture visual data on wildlife presence and behaviors.
+</details>
+
+<details>
+  <summary>2️⃣ Edge-to-Cloud Data Ingestion & Processing</summary>
+  
+  - **ECS IoT Cluster Containers** handle incoming sensor data streams.
+  - **IoT Rules Engine** routes messages from IoT devices to AWS Lambda functions.
+  - **Lambda Functions** process real-time sensor data (`GPSTopicProcessor.py`, `EnvTopicProcessor.py`, etc.).
+  - **Raw data is categorized into separate processing layers** for GPS, environmental, health, and camera data.
+</details>
+
+<details>
+  <summary>3️⃣ ETL Pipelines for Data Transformation & Storage</summary>
+  
+  - **Data is extracted, cleaned, and transformed** through specialized ETL functions (`GPS_ETL`, `Env_ETL`, `Hea_ETL`, etc.).
+  - **Processed data is stored in Amazon S3** (acts as a structured data lake for analysis).
+  - **ETL pipelines** enable structured storage of wildlife movement, health metrics, and environmental conditions.
+</details>
+
+<details>
+  <summary>4️⃣ Integration with Off-Site Health Clinics & Research Labs</summary>
+  
+  - **Secure Direct Connect & On-Prem PostgreSQL Server** for data sharing.
+  - **Clinic Staff & Researchers** access wildlife data to study potential pathogen spillover into human populations.
+  - **On-premise clinic software & IoT health monitoring data exchange** ensure collaboration with public health organizations.
+</details>
+
+<details>
+  <summary>5️⃣ Data Analytics & Visualization</summary>
+  
+  - **Metabase (BI Tool) provides dashboards and queries** for analyzing wildlife data.
+  - **Analysts can query GPS movement trends, environmental changes, and wildlife health risks.**
+  - **Historical & real-time insights support decision-making** for conservationists and epidemiologists.
+</details>
 
 ---
 
