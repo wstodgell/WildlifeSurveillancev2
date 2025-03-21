@@ -6,7 +6,7 @@ A cloud-native solution designed to support the **Wildlife Health Surveillance (
 
 ## 🌍 Project Context
 
-The WHS Program monitors zoonotic pathogens in wildlife that pose risks to human health. This system enables real-time, scalable, and secure analysis of wildlife genomic data alongside anonymized human opt-in data.
+The Wildlife Health Surveillance (WHS) Program is dedicated to monitoring and detecting pathogens affecting wildlife populations, which can potentially spill over to humans, posing a significant public health risk. To facilitate this work, the WHS Program requires a robust and scalable IT solution for the genomic analysis of wildlife samples, storage of genomic sequence data, and sharing of results with various stakeholders, including wildlife health organizations, research institutions, and public health agencies.
 
 ---
 
