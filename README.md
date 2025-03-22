@@ -6,8 +6,9 @@ It demonstrates my experience in:
 
 - Creating clear architectural documentation and artifacts to communicate with dev teams, analysts, and leadership
 - Understanding and modeling business cases (e.g., opt-in human health data coordination)
-- Designing modular AWS infrastructure using the AWS Cloud Development Kit (CDK)
-- Integrating IoT data collection with genomic analysis pipelines and cloud-scale data sharing
+- Selecting appropriate AWS services to fit the business requirements
+- AWS solution design, development of CDK architecture and coding skills
+- Integrating existing IoT devices to AWS ingestion and analytics pipelines.
 - Applying security best practices with AWS services (IAM, Secrets Manager, IoT Core certificates, fine-grained access policies)
 - Structuring infrastructure as reusable, maintainable code across multiple stacks
 
